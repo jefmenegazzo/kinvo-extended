@@ -1,4 +1,4 @@
-# Editor configuration, see https://editorconfig.org
+# Editor configuration, see http://editorconfig.org
 root = true
 
 [*]
@@ -7,10 +7,13 @@ indent_style = tab
 indent_size = 4
 insert_final_newline = true
 trim_trailing_whitespace = true
-
-[*.ts]
-quote_type = single
+max_line_length = off
+quote_type = double
 
 [*.md]
 max_line_length = off
 trim_trailing_whitespace = false
+
+[*.yml]
+indent_style = space
+indent_size = 4

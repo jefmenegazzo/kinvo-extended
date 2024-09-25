@@ -1,0 +1,11 @@
+{
+	"/kinvo": {
+		"target": "https://k2c-api.kinvo.com.br",
+		"secure": false,
+		"changeOrigin": true,
+		"logLevel": "debug",
+		"pathRewrite": {
+			"^/kinvo": ""
+		}
+	}
+}

@@ -1,0 +1,124 @@
+{
+	"files.exclude": {
+		"**/.git": true,
+		"**/.svn": true,
+		"**/.hg": true,
+		"**/CVS": true,
+		"**/.DS_Store": true,
+		"**/Thumbs.db": true,
+		".vscode": true,
+		".nx": true,
+		".angular": true,
+		"dist": true,
+		"build": true,
+		"coverage": true,
+		"docs": true,
+		"tmp": true,
+		"node_modules": true,
+		"**/.dockerignore": true,
+		"**/.editorconfig": true,
+		"**/.eslintignore": true,
+		"**/.prettierignore": true,
+		"**/.prettierrc": true,
+		"**/angular.json": true,
+		"**/docker-compose.yml": true,
+		"**/docker-compose.prod.yml": true,
+		"**/jest.preset.js": true,
+		"**/localhost.conf": true,
+		"**/migrations.json": true,
+		"**/nx.json": true,
+		"**/package-lock.json": true,
+		"**/pnpm-lock.yaml": true,
+		"**/.npmrc": true,
+		".env": true,
+		".nxignore": true,
+		".gitattributes": true,
+		"**/*.spec.ts": false,
+		"**/*-e2e": false,
+		"**/TODO.md": true,
+		"**/README.md": true,
+		"**/.gitignore": true,
+		"**/.gitkeep": true,
+		"**/.eslintrc*.json": true,
+		"**/*jest.config.ts": true,
+		"**/test-setup.ts": true,
+		"**/tsconfig*.json": true,
+		"**/webpack.*config.{js,ts}": true,
+		"**/module-federation.config.ts": true,
+		"**/project.json": true,
+		"**/Dockerfile": true,
+		"**/Dockerfile.debug": true,
+		"**/tailwind.config.js": true
+	},
+	"todo-tree.general.tags": [
+		"TODO",
+		"TASK",
+		"WIP",
+		"BUG",
+		"FIXME",
+		"[ ]",
+		"[x]"
+	],
+	"todo-tree.highlights.customHighlight": {
+		"TODO": {
+			"icon": "gear",
+			"type": "text-and-comment",
+			"iconColour": "#01579B",
+			"foreground": "#FFFFFF",
+			"background": "#01579B"
+		},
+		"TASK": {
+			"icon": "tools",
+			"type": "text-and-comment",
+			"iconColour": "#FFFF00",
+			"foreground": "#FFFFFF",
+			"background": "#01579B"
+		},
+		"WIP": {
+			"icon": "clock",
+			"type": "whole-line",
+			"iconColour": "#00BFA5",
+			"foreground": "#FFFFFF",
+			"background": "#00BFA5"
+		},
+		"BUG": {
+			"icon": "bug",
+			"type": "text-and-comment",
+			"iconColour": "#D500F9",
+			"foreground": "#FFFFFF",
+			"background": "#D500F9"
+		},
+		"FIXME": {
+			"icon": "flame",
+			"type": "text-and-comment",
+			"iconColour": "#D500F9",
+			"foreground": "#FFFFFF",
+			"background": "#D500F9"
+		},
+		"[ ]": {
+			"icon": "issue-draft"
+		},
+		"[x]": {
+			"icon": "issue-closed"
+		}
+	},
+	"todo-tree.tree.scanMode": "workspace only",
+	"angular-schematics.schematicsDefaultOptions": {
+		"angular-*": {
+			"style": "scss",
+			"externalTemplate": true
+		}
+	},
+	"files.associations": {
+		"*.css": "tailwindcss"
+	},
+	"editor.quickSuggestions": {
+		"strings": "on"
+	},
+	"tailwindCSS.includeLanguages": {
+		"html": "html",
+		"javascript": "javascript",
+		"css": "css"
+	},
+	"tailwindCSS.experimental.configFile": "./tailwind.config.js",
+}

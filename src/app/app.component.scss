@@ -1,2 +1,13 @@
-@import "primeng/resources/themes/lara-light-blue/theme.css";
-@import "primeng/resources/primeng.css";
+.route-menu {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000; /* Ajuste conforme necessário */
+    background-color: white; /* Ajuste conforme necessário */
+}
+
+.route-content {
+    margin-top: 42px; /* Ajuste conforme a altura do .card */
+    overflow-y: auto;
+    height: calc(100vh - 42px); /* Ajuste conforme a altura do .card */
+}
