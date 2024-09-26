@@ -1,3 +1,8 @@
+// Primeng Settings
+// @import "primeng/resources/primeng.css";
+// @import "primeicons/primeicons.css";
+// @import "primeng/resources/themes/aura-light-blue/theme.css";
+
 @layer tailwind-base, primeng, tailwind-components, tailwind-utilities;
 
 // Please take note of the order in which these are imported
@@ -28,11 +33,6 @@
 	// tailwind utitlity classes here
 }
 
-// Primeng Settings
-// @import "primeng/resources/primeng.css";
-// @import "primeicons/primeicons.css";
-// @import "primeng/resources/themes/aura-light-blue/theme.css";
-
 @import "material-symbols/outlined.css";
 
 .material-symbols-outlined {
@@ -45,9 +45,11 @@ body {
 	height: 100%;
 	font-size: 12px;
 	overflow: hidden;
-	font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+	margin: 0;
 }
 
-body {
-	margin: 0;
+body,
+body .p-component {
+	font-family: Montserrat, sans-serif !important;
+	// font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
 }

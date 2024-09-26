@@ -1,1 +1,25 @@
-<p>login works!</p>
+<div class="flex items-center justify-center min-h-screen bg-gray-100">
+	<div class="bg-white p-12 shadow-md rounded-lg sm:w-1/1 md:w-1/2 lg:w-1/3 xl:w-1/4 2xl:w-1/4">
+		<div class="flex flex-col text-center mb-8">
+			<img src="logo.svg" alt="Logo" class="w-36 h-36 mx-auto" />
+			<img src="kinvo-extended-logo.svg" alt="Logo" class="w-48 h-32 mx-auto" />
+		</div>
+
+		<div class="flex flex-col">
+
+			<form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+
+				<label for="email" class="block text-900 font-semibold mb-2">E-mail</label>
+				<input pInputText id="email" type="text" class="w-full mb-8" placeholder="E-mail"
+					formControlName="user" />
+
+				<label for="password" class="block text-900 font-semibold mb-2">Senha</label>
+				<p-password id="password" styleClass="w-full mb-12" inputStyleClass="w-full" placeholder="Senha"
+					[toggleMask]="true" [feedback]="false" formControlName="password" />
+
+				<button pButton pRipple label="Entrar" icon="pi pi-user" class="w-full" type="submit"
+					[loading]="loading"></button>
+			</form>
+		</div>
+	</div>
+</div>

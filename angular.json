@@ -4,6 +4,9 @@
 	"newProjectRoot": "projects",
 	"projects": {
 		"kinvo-extended": {
+			"i18n": {
+				"sourceLocale": "pt"
+			},
 			"projectType": "application",
 			"schematics": {
 				"@schematics/angular:component": {
@@ -21,7 +24,8 @@
 						"index": "src/index.html",
 						"browser": "src/main.ts",
 						"polyfills": [
-							"zone.js"
+							"zone.js",
+							"@angular/localize/init"
 						],
 						"tsConfig": "tsconfig.app.json",
 						"inlineStyleLanguage": "scss",
@@ -50,8 +54,8 @@
 									"maximumError": "4kB"
 								}
 							],
-              "outputHashing": "all",
-              "serviceWorker": "ngsw-config.json"
+							"outputHashing": "all",
+							"serviceWorker": "ngsw-config.json"
 						},
 						"development": {
 							"optimization": false,
@@ -64,7 +68,8 @@
 				"serve": {
 					"builder": "@angular-devkit/build-angular:dev-server",
 					"options": {
-						"proxyConfig": "src/proxy.conf.json"
+						"proxyConfig": "src/proxy.conf.json",
+						"port": 4500
 					},
 					"configurations": {
 						"production": {
@@ -84,7 +89,8 @@
 					"options": {
 						"polyfills": [
 							"zone.js",
-							"zone.js/testing"
+							"zone.js/testing",
+							"@angular/localize/init"
 						],
 						"tsConfig": "tsconfig.spec.json",
 						"inlineStyleLanguage": "scss",

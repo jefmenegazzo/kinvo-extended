@@ -6,6 +6,7 @@ import { provideServiceWorker } from "@angular/service-worker";
 import { MessageService } from "primeng/api";
 import { routes } from "./app.routes";
 import { requestInterceptor } from "./interceptors/request.interceptor";
+import { CacheService } from "./services/cache.service";
 
 export const appConfig: ApplicationConfig = {
 	providers: [
@@ -18,5 +19,6 @@ export const appConfig: ApplicationConfig = {
 			registrationStrategy: "registerWhenStable:30000",
 		}),
 		MessageService,
-	],
+		CacheService
+	]
 };
