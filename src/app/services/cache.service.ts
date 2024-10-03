@@ -1,7 +1,13 @@
 import { Injectable } from "@angular/core";
 import { BehaviorSubject, Observable, of } from "rxjs";
 
-export interface CacheChangeEvent<T = any> {
+export const KINVO_KEYS = {
+	TOKEN: "kinvoToken",
+	USER: "kinvoUser",
+	PASSWORD: "kinvoPassword"
+}
+
+export interface CacheChangeEvent<T = unknown> {
 	key: string;
 	value: T;
 }
@@ -11,11 +17,11 @@ export interface CacheChangeEvent<T = any> {
 })
 export class CacheService {
 
-	private cache = new Map<string, any>();
+	private cache = new Map<string, unknown>();
 
 	public cache$ = new BehaviorSubject<CacheChangeEvent | null>(null);
 
-	public set<T = any>(key: string, data: T, override: boolean = true): void {
+	public set<T = unknown>(key: string, data: T, override: boolean = true): void {
 
 		if (this.cache.has(key) && !override) {
 			throw new Error(`Data already exists for key '${key}'. Use a different key, delete the existing one first or mark override to true.`);
@@ -25,11 +31,11 @@ export class CacheService {
 		this.cache$.next({ key: key, value: data });
 	}
 
-	public get<T = any>(key: string): T {
-		return this.cache.get(key);
+	public get<T = unknown>(key: string): T {
+		return this.cache.get(key) as T;
 	}
 
-	public getObservable<T = any>(key: string): Observable<T> {
+	public getObservable<T = unknown>(key: string): Observable<T> {
 		return of(this.get<T>(key));
 	}
 

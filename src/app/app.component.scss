@@ -1,13 +1,6 @@
-.route-menu {
-    position: fixed;
-    top: 0;
-    width: 100%;
-    z-index: 1000; /* Ajuste conforme necessário */
-    background-color: white; /* Ajuste conforme necessário */
-}
-
-.route-content {
-    margin-top: 42px; /* Ajuste conforme a altura do .card */
-    overflow-y: auto;
-    height: calc(100vh - 42px); /* Ajuste conforme a altura do .card */
+:host ::ng-deep .p-menubar {
+	// background: var(--primary-color);
+	border-radius: 0px;
+	// color: white;
+	// border: none;
 }

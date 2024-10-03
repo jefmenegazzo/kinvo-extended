@@ -17,7 +17,8 @@
 		"start": "ng serve",
 		"build": "ng build",
 		"watch": "ng build --watch --configuration development",
-		"test": "ng test"
+		"test": "ng test",
+		"lint": "ng lint"
 	},
 	"dependencies": {
 		"@angular/animations": "^18.2.0",
@@ -31,8 +32,10 @@
 		"@angular/service-worker": "^18.2.0",
 		"chart.js": "^4.4.4",
 		"chartjs-adapter-date-fns": "^3.0.0",
+		"chartjs-plugin-datalabels": "^2.2.0",
 		"chartjs-plugin-zoom": "^2.0.1",
 		"date-fns": "^4.1.0",
+		"idb": "^8.0.0",
 		"material-symbols": "^0.23.0",
 		"primeicons": "^7.0.0",
 		"primeng": "^17.18.10",
@@ -45,9 +48,12 @@
 		"@angular/cli": "^18.2.5",
 		"@angular/compiler-cli": "^18.2.0",
 		"@angular/localize": "^18.2.5",
+		"@types/chart.js": "^2.9.41",
 		"@types/jasmine": "~5.1.0",
 		"angular-cli-ghpages": "^2.0.1",
+		"angular-eslint": "18.3.1",
 		"autoprefixer": "^10.4.20",
+		"eslint": "^9.9.1",
 		"jasmine-core": "~5.2.0",
 		"karma": "~6.4.0",
 		"karma-chrome-launcher": "~3.2.0",
@@ -56,6 +62,7 @@
 		"karma-jasmine-html-reporter": "~2.1.0",
 		"postcss": "^8.4.47",
 		"tailwindcss": "^3.4.13",
-		"typescript": "~5.5.2"
+		"typescript": "~5.5.2",
+		"typescript-eslint": "8.2.0"
 	}
 }

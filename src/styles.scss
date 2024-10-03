@@ -43,13 +43,68 @@
 html,
 body {
 	height: 100%;
+	min-height: 100%;
+	max-height: 100%;
 	font-size: 12px;
 	overflow: hidden;
 	margin: 0;
 }
 
 body,
-body .p-component {
+body .p-component,
+.p-inputtext {
 	font-family: Montserrat, sans-serif !important;
 	// font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+}
+
+/* Estilizando a scrollbar para navegadores baseados em WebKit (Chrome, Safari) */
+::-webkit-scrollbar {
+	width: 6px;
+	/* Largura da scrollbar */
+	height: 6px;
+	/* Altura da scrollbar para elementos scrollables horizontalmente */
+}
+
+::-webkit-scrollbar-thumb {
+	background-color: #BDBDBD;
+	/* Cor da barra de rolagem */
+	border-radius: 10px;
+	/* Cantos arredondados */
+}
+
+*::-webkit-scrollbar-thumb:hover {
+	background-color: #BDBDBD;
+}
+
+*::-webkit-scrollbar-thumb:active {
+	background-color: #BDBDBD;
+}
+
+::-webkit-scrollbar-track {
+	background: transparent;
+	/* Cor do fundo da scrollbar */
+	border-radius: 10px;
+	/* Cantos arredondados */
+}
+
+*::-webkit-scrollbar-track:hover {
+	background-color: transparent;
+}
+
+*::-webkit-scrollbar-track:active {
+	background-color: transparent;
+}
+
+// /* Para navegadores compatíveis com a pseudo-classe scrollbar (Firefox e futuros navegadores) */
+// * {
+// 	scrollbar-width: thin;
+// 	/* Define a largura da scrollbar como fina */
+// 	scrollbar-color: #a0a0a0 transparent;
+// 	/* Cor da scrollbar e do fundo, respectivamente */
+// }
+
+.router-active {
+	background: var(--primary-color-text);
+	border-color: var(--surface-border);
+	color: var(--primary-color);
 }

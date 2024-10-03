@@ -1,76 +1,353 @@
-<div class="p-6 flex flex-col gap-6">
-	<div class="flex flex-row justify-between">
-		<p-selectButton [options]="chartTypes" [(ngModel)]="chartTypeSelected" [multiple]="false" />
+<div class="flex flex-col gap-4 w-full h-full p-4">
 
-		<p-dropdown class="p-dropdown-sm" [styleClass]="'p-dropdown-sm'" [options]="portfolios" [(ngModel)]="portfolioSelected" optionLabel="title" optionValue="id" placeholder="Selecione a Carteira" />
+	<div class="flex flex-col justify-between gap-4 md:flex-row">
+
+		<div class="flex flex-col gap-4 md:flex-row">
+
+			<div class="flex flex-row w-full">
+				<p-button type="button" label="Carteira" severity="secondary"
+					styleClass="rounded-none rounded-l-lg border-slate-300" />
+
+				<p-dropdown styleClass="p-dropdown-sm rounded-none rounded-r-lg w-full" class="p-dropdown-sm w-full"
+					[options]="portfolioData" [(ngModel)]="portfolioDataSelected" placeholder="Selecione a Carteira"
+					[loading]="portfolioDataLoading" optionLabel="title" optionValue="id"
+					[disabled]="portfolioDataLoading || dataFullLoading" (onChange)="onPorfolioChange()" />
+			</div>
+
+			<div class="flex flex-row w-full">
+				<p-button type="button" label="Período" severity="secondary"
+					styleClass="rounded-none rounded-l-lg border-slate-300" />
+
+				<p-dropdown class="p-dropdown-sm" styleClass="p-dropdown-sm rounded-none w-full"
+					class="p-dropdown-sm w-full" placeholder="Selecione o Período"
+					[(ngModel)]="dataIntervalOptionsSelected" [options]="dataIntervalOptions"
+					[loading]="dataFullLoading" [disabled]="portfolioDataLoading || dataFullLoading"
+					(onChange)="onDataIntervalChange()" />
+
+				<p-calendar inputStyleClass="rounded-none rounded-r-lg w-48" [(ngModel)]="dateRange"
+					selectionMode="range" [readonlyInput]="true" view="month" dateFormat="mm/yy"
+					[disabled]="portfolioDataLoading || dataFullLoading || dataIntervalOptionsSelected !== 'Personalizado'"
+					(ngModelChange)="onDataIntervalChange($event)" />
+			</div>
+
+			<div class="flex flex-row w-full xl:hidden">
+				<p-button type="button" label="Análise" severity="secondary"
+					styleClass="rounded-none rounded-l-lg border-slate-300" />
+
+				<p-dropdown styleClass="p-dropdown-sm rounded-none rounded-r-lg w-full" class="p-dropdown-sm w-full"
+					placeholder="Selecione a Análise" [(ngModel)]="dataAnalysisTypesSelected"
+					[options]="dataAnalysisTypes" [loading]="dataFullLoading"
+					[disabled]="portfolioDataLoading || dataFullLoading" (onChange)="applyDataFilters()" />
+			</div>
+
+		</div>
+
+		<div class="hidden flex-row w-full justify-end xl:flex">
+			<p-selectButton [options]="dataAnalysisTypes" [(ngModel)]="dataAnalysisTypesSelected" [multiple]="false"
+				[disabled]="portfolioDataLoading || dataFullLoading" [unselectable]="false" [allowEmpty]="false"
+				(onChange)="applyDataFilters()" />
+		</div>
+
 	</div>
 
-	<p-chart [type]="chart" [data]="chartData" [options]="chartOptions" />
+	<div [ngSwitch]="dataAnalysisTypesSelected">
 
-	<div class="border rounded mt-4">
-		<p-table [value]="capitalGainTable" [scrollable]="true" scrollHeight="360px" [tableStyle]="{ 'min-width': '50rem' }" styleClass="p-datatable-sm">
-			<ng-template pTemplate="header">
-				<tr>
-					<th>Período</th>
-					<th>Valor Investido</th>
-					<th>Saldo Inicial</th>
-					<th>Aplicações</th>
-					<th>Resgates</th>
-					<th>Movimentação</th>
-					<th>Rendimentos</th>
-					<th>Proventos</th>
-					<th>Ganho de Capital</th>
-					<th>IR</th>
-					<th>IOF</th>
-					<th>Taxas</th>
-					<th>Encargos</th>
-					<th>Saldo Fim</th>
-					<th>Rentabilidade</th>
-				</tr>
-			</ng-template>
-			<ng-template pTemplate="body" let-row>
-				<tr>
-					<td>{{ row.monthlyReferenceDate | date : "MM/YYYY" }}</td>
-					<td>{{ row.valueApplied | currency : "BRL" }}</td>
-					<td>{{ row.initialEquity | currency : "BRL" }}</td>
-					<td>{{ row.applications | currency : "BRL" }}</td>
-					<td>{{ row.redemptions | currency : "BRL" }}</td>
-					<!-- <td>{{ row.net | currency : "BRL" }}</td> -->
-					<td>{{ row.finalEquity - (row.initialEquity + row.capitalGain) | currency : "BRL" }}</td>
-					<td>{{ row.returns | currency : "BRL" }}</td>
-					<td>{{ row.proceeds | currency : "BRL" }}</td>
-					<td>{{ row.capitalGain | currency : "BRL" }}</td>
-					<td>{{ 0 | currency : "BRL" }}</td>
-					<td>{{ 0 | currency : "BRL" }}</td>
-					<td>{{ 0 | currency : "BRL" }}</td>
-					<td>{{ 0 | currency : "BRL" }}</td>
-					<td>{{ row.finalEquity | currency : "BRL" }}</td>
-					<td>{{ row.capitalGain / row.valueApplied | percent : "1.2-2" }}</td>
-				</tr>
-			</ng-template>
-		</p-table>
+		<div *ngSwitchCase="'Tabela Resumo'">
+
+			<div class="border rounded data-panel">
+
+				<p-table #dt [value]="tableData" [columns]="tableColumns" [scrollable]="true" scrollHeight="flex"
+					[tableStyle]="{ 'min-width': '50rem' }" styleClass="p-datatable-sm p-datatable-gridlines"
+					selectionMode="single">
+
+					<ng-template pTemplate="header">
+
+						<tr>
+							<th pFrozenColumn colspan="1">
+								<p-button [rounded]="true" severity="secondary" styleClass="p-button-sm "
+									icon="pi pi-external-link" label="Exportar"
+									(onClick)="downloadCSV()"
+									[disabled]="portfolioDataLoading || dataFullLoading"/>
+							</th>
+							<th colspan="9">
+								Saldos
+							</th>
+							<th colspan="4">
+								Impostos e Taxas
+							</th>
+							<th colspan="5">
+								Rentabilidade
+							</th>
+						</tr>
+
+						<tr>
+							<th pSortableColumn="monthlyReferenceDate" pFrozenColumn class="border">
+								Período
+								<p-sortIcon field="monthlyReferenceDate" />
+							</th>
+							<th pSortableColumn="valueApplied">
+								Valor Investido
+								<p-sortIcon field="valueApplied" />
+							</th>
+							<th pSortableColumn="initialEquity">
+								Saldo Inicial
+								<p-sortIcon field="initialEquity" />
+							</th>
+							<th pSortableColumn="applications">
+								Aplicações
+								<p-sortIcon field="applications" />
+							</th>
+							<th pSortableColumn="redemptions">
+								Resgates
+								<p-sortIcon field="redemptions" />
+							</th>
+							<th pSortableColumn="movementations">
+								Movimentação
+								<p-sortIcon field="movementations" />
+							</th>
+							<th pSortableColumn="returns">
+								Rendimentos
+								<p-sortIcon field="returns" />
+							</th>
+							<th pSortableColumn="proceeds">
+								Proventos
+								<p-sortIcon field="proceeds" />
+							</th>
+							<th pSortableColumn="capitalGain">
+								Ganho de Capital
+								<p-sortIcon field="capitalGain" />
+							</th>
+							<th pSortableColumn="finalEquity">
+								Saldo Fim
+								<p-sortIcon field="finalEquity" />
+							</th>
+							<th pSortableColumn="incomeTax">
+								IR
+								<p-sortIcon field="incomeTax" />
+							</th>
+							<th pSortableColumn="iof">
+								IOF
+								<p-sortIcon field="iof" />
+							</th>
+							<th pSortableColumn="cost">
+								Taxas
+								<p-sortIcon field="cost" />
+							</th>
+							<th pSortableColumn="charges">
+								Encargos
+								<p-sortIcon field="charges" />
+							</th>
+							<th pSortableColumn="profitabilityCarteira">
+								Carteira
+								<p-sortIcon field="profitabilityCarteira" />
+							</th>
+							<th pSortableColumn="profitabilityCdi">
+								CDI
+								<p-sortIcon field="profitabilityCdi" />
+							</th>
+							<th pSortableColumn="profitabilityIbov">
+								IBOV
+								<p-sortIcon field="profitabilityIbov" />
+							</th>
+							<th pSortableColumn="profitabilityInflacao">
+								IPCA
+								<p-sortIcon field="profitabilityInflacao" />
+							</th>
+							<th pSortableColumn="profitabilityPoupanca">
+								Poupança
+								<p-sortIcon field="profitabilityPoupanca" />
+							</th>
+						</tr>
+					</ng-template>
+
+					<ng-template pTemplate="body" let-row>
+						<tr>
+							<td pFrozenColumn class="text-center font-semibold">
+								{{ row.monthlyReferenceDate | date : "MM/YYYY" }}
+							</td>
+							<td class="text-right">
+								{{ row.valueApplied | currency : "BRL" }}
+							</td>
+							<td class="text-right">
+								{{ row.initialEquity | currency : "BRL" }}
+							</td>
+							<td class="text-right">
+								{{ row.applications | currency : "BRL" }}
+							</td>
+							<td class="text-right">
+								{{ row.redemptions | currency : "BRL" }}
+							</td>
+							<td class="text-right font-semibold"
+								[ngClass]="row.movementations < 0 ? 'text-red-500' : 'text-green-500'">
+								{{ row.movementations | currency : "BRL" }}
+							</td>
+							<td class="text-right">
+								{{ row.returns | currency : "BRL" }}
+							</td>
+							<td class="text-right">
+								{{ row.proceeds | currency : "BRL" }}
+							</td>
+							<td class="text-right font-semibold"
+								[ngClass]="row.capitalGain < 0 ? 'text-red-500' : 'text-green-500'">
+								{{ row.capitalGain | currency : "BRL" }}
+							</td>
+							<td class="text-right">
+								{{ row.finalEquity | currency : "BRL" }}
+							</td>
+							<td class="text-right">
+								{{ row.incomeTax | currency : "BRL" }}
+							</td>
+							<td class="text-right">
+								{{ row.iof | currency : "BRL" }}
+							</td>
+							<td class="text-right">
+								{{ row.cost | currency : "BRL" }}
+							</td>
+							<td class="text-right">
+								{{ row.charges | currency : "BRL" }}
+							</td>
+							<td class="text-right font-semibold"
+								[ngClass]="row.profitabilityCarteira < 0 ? 'text-red-500' : 'text-green-500'">
+								{{ row.profitabilityCarteira | percent : "1.2-2" }}
+							</td>
+							<td class="text-left">
+								<div class="flex justify-between">
+									<span>{{ row.profitabilityCdi | percent : "1.2-2" }}</span>
+									<span>
+										({{(row.profitabilityCarteiraPercentCdi | percent : "1.2-2") || "N/A"}})
+									</span>
+								</div>
+							</td>
+							<td class="text-left">
+								<div class="flex justify-between">
+									<span>{{ row.profitabilityIbov | percent : "1.2-2" }}</span>
+									<span>
+										({{(row.profitabilityCarteiraPercentIbov | percent : "1.2-2") || "N/A"}})
+									</span>
+								</div>
+							</td>
+							<td class="text-left">
+								<div class="flex justify-between">
+									<span>{{ row.profitabilityInflacao | percent : "1.2-2" }}</span>
+									<span>
+										({{(row.profitabilityCarteiraPercentInflacao | percent : "1.2-2") || "N/A"}})
+									</span>
+								</div>
+							</td>
+							<td class="text-left">
+								<div class="flex justify-between">
+									<span>{{ row.profitabilityPoupanca | percent : "1.2-2" }}</span>
+									<span>
+										({{(row.profitabilityCarteiraPercentPoupanca | percent : "1.2-2") || "N/A"}})
+									</span>
+								</div>
+							</td>
+						</tr>
+					</ng-template>
+
+					<ng-template pTemplate="footer">
+
+						<ng-template [ngIf]="portfolioDataLoading || dataFullLoading">
+							<tr *ngFor="let i of [].constructor(20); ; index as x;">
+								<td pFrozenColumn>
+									<p-skeleton />
+								</td>
+								<td *ngFor="let j of [].constructor(18); index as y;">
+									<p-skeleton />
+								</td>
+							</tr>
+						</ng-template>
+
+						<tr>
+							<td pFrozenColumn class="text-center">
+								Totais
+							</td>
+							<td class="text-right">
+								-
+							</td>
+							<td class="text-right">
+								-
+							</td>
+							<td class="text-right">
+								{{ tableDataTotalsRow.applications | currency : "BRL" }}
+							</td>
+							<td class="text-right">
+								{{ tableDataTotalsRow.redemptions | currency : "BRL" }}
+							</td>
+							<td class="text-right">
+								{{ tableDataTotalsRow.movementations | currency : "BRL" }}
+							</td>
+							<td class="text-right">
+								{{ tableDataTotalsRow.returns | currency : "BRL" }}
+							</td>
+							<td class="text-right">
+								{{ tableDataTotalsRow.proceeds | currency : "BRL" }}
+							</td>
+							<td class="text-right">
+								{{ tableDataTotalsRow.capitalGain | currency : "BRL" }}
+							</td>
+							<td class="text-right">
+								-
+							</td>
+							<td class="text-right">
+								{{ tableDataTotalsRow.incomeTax | currency : "BRL" }}
+							</td>
+							<td class="text-right">
+								{{ tableDataTotalsRow.iof | currency : "BRL" }}
+							</td>
+							<td class="text-right">
+								{{ tableDataTotalsRow.cost | currency : "BRL" }}
+							</td>
+							<td class="text-right">
+								{{ tableDataTotalsRow.charges | currency : "BRL" }}
+							</td>
+							<td class="text-right">
+								{{ tableDataTotalsRow.profitabilityCarteira | percent : "1.2-2" }}
+							</td>
+							<td class="text-right">
+								<div class="flex justify-between">
+									<span>{{ tableDataTotalsRow.profitabilityCdi | percent : "1.2-2" }}</span>
+									<span>
+										({{(tableDataTotalsRow.profitabilityCarteiraPercentCdi | percent : "1.2-2") ||
+										"N/A"}})
+									</span>
+								</div>
+							</td>
+							<td class="text-right">
+								<div class="flex justify-between">
+									<span>{{ tableDataTotalsRow.profitabilityIbov | percent : "1.2-2" }}</span>
+									<span>
+										({{(tableDataTotalsRow.profitabilityCarteiraPercentIbov | percent : "1.2-2") ||
+										"N/A"}})
+									</span>
+								</div>
+							</td>
+							<td class="text-right">
+								<div class="flex justify-between">
+									<span>{{ tableDataTotalsRow.profitabilityInflacao | percent : "1.2-2" }}</span>
+									<span>
+										({{(tableDataTotalsRow.profitabilityCarteiraPercentInflacao | percent : "1.2-2")
+										|| "N/A"}})
+									</span>
+								</div>
+							</td>
+							<td class="text-right">
+								<div class="flex justify-between">
+									<span>{{ tableDataTotalsRow.profitabilityPoupanca | percent : "1.2-2" }}</span>
+									<span>
+										({{(tableDataTotalsRow.profitabilityCarteiraPercentPoupanca | percent : "1.2-2")
+										|| "N/A"}})
+									</span>
+								</div>
+							</td>
+						</tr>
+					</ng-template>
+				</p-table>
+			</div>
+		</div>
+
+		<div *ngSwitchDefault class="data-panel">
+			<p-chart [type]="chartType" [data]="chartData" [options]="chartOptions" [plugins]="chartPlugins" />
+		</div>
 	</div>
 </div>
-
-<!-- <div class="flex flex-column gap-2 px-6 py-2 h-full w-full surface-ground">
-
-	<p-table [value]="products" [tableStyle]="{ 'min-width': '50rem' }" class="p-datatable-xs">
-        <ng-template pTemplate="header">
-            <tr>
-                <th>Code</th>
-                <th>Name</th>
-                <th>Category</th>
-                <th>Quantity</th>
-            </tr>
-        </ng-template>
-        <ng-template pTemplate="body" let-product>
-            <tr>
-                <td>{{ product.code }}</td>
-                <td>{{ product.name }}</td>
-                <td>{{ product.category }}</td>
-                <td>{{ product.quantity }}</td>
-            </tr>
-        </ng-template>
-    </p-table>
-
-</div> -->

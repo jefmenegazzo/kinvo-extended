@@ -7,5 +7,5 @@
     <path id="Caminho_3896" data-name="Caminho 3896" d="M311.895,108.79a2.987,2.987,0,1,0,2.987,2.988,2.987,2.987,0,0,0-2.987-2.988" transform="translate(-280.531 -108.79)" fill="#0dcee6"/>
     <path id="Caminho_3897" data-name="Caminho 3897" d="M374.1,134.874a6.347,6.347,0,1,1,6.348-6.348,6.354,6.354,0,0,1-6.348,6.348m0-18.669a12.322,12.322,0,1,0,12.322,12.322A12.335,12.335,0,0,0,374.1,116.205" transform="translate(-272.169 -107.617)" fill="#0dcee6"/>
   </g>
-  <text x="8" y="60" font-family="Montserrat, sans-serif" font-size="20" fill="#0dcee6">extended</text>
+  <text x="10" y="60" font-family="Montserrat, sans-serif" font-size="20" fill="#0dcee6">extended</text>
 </svg>

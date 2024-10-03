@@ -4,24 +4,24 @@ import { MessageService } from "primeng/api";
 import { Observable } from "rxjs/internal/Observable";
 import { throwError } from "rxjs/internal/observable/throwError";
 import { catchError } from "rxjs/internal/operators/catchError";
-import { environment } from "../environments/environment";
+import { CacheService, KINVO_KEYS } from "../services/cache.service";
 
 export function requestInterceptor(req: HttpRequest<unknown>, next: HttpHandlerFn): Observable<HttpEvent<unknown>> {
 
-	if (req.url.startsWith("kinvo") && environment.kinvo_token) {
+	const messageService = inject(MessageService);
+	const cacheService = inject(CacheService);
+
+	if (req.url.startsWith("kinvo") && cacheService.get(KINVO_KEYS.TOKEN)) {
 
 		req = req.clone({
 			setHeaders: {
-				"authorization": `Bearer ${environment.kinvo_token}`,
+				"authorization": `Bearer ${cacheService.get<string>(KINVO_KEYS.TOKEN)}`,
 			},
 		});
 	}
 
-	const messageService = inject(MessageService);
-
 	return next(req).pipe(
 		catchError((httpError: HttpErrorResponse) => {
-			console.log(messageService);
 			messageService.add({ severity: "error", summary: "Erro", detail: httpError?.error?.error?.message || httpError.message });
 			return throwError(() => httpError);
 		})

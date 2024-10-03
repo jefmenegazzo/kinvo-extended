@@ -69,7 +69,8 @@
 					"builder": "@angular-devkit/build-angular:dev-server",
 					"options": {
 						"proxyConfig": "src/proxy.conf.json",
-						"port": 4500
+						"port": 4500,
+						"host": "0.0.0.0"
 					},
 					"configurations": {
 						"production": {
@@ -115,8 +116,22 @@
 						"remote": "origin",
 						"message": "Deployed to GitHub Pages"
 					}
+				},
+				"lint": {
+					"builder": "@angular-eslint/builder:lint",
+					"options": {
+						"lintFilePatterns": [
+							"src/**/*.ts",
+							"src/**/*.html"
+						]
+					}
 				}
 			}
 		}
+	},
+	"cli": {
+		"schematicCollections": [
+			"@angular-eslint/schematics"
+		]
 	}
 }

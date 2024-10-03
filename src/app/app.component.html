@@ -1,21 +1,25 @@
-<!-- <div class="card route-menu">
-	<p-tabMenu [model]="items">
-		<ng-template pTemplate="item" let-item>
-			<a [routerLink]="item.routerLink" class="p-menuitem-link">
-				<span
-					class="material-symbols-outlined"
-				>
-					{{ item.icon }}
-				</span>
-				<span class="ml-2">
-					{{ item.label }}
-				</span>
-			</a>
-		</ng-template>
-	</p-tabMenu>
-</div> -->
-<!-- <div class="route-content">
-	<router-outlet></router-outlet>
-</div> -->
 <p-toast></p-toast>
-<router-outlet></router-outlet>
+
+<div class="flex flex-col h-full">
+
+	<div class="flex-none" *ngIf="hasLogin">
+		<div class="card">
+			<p-menubar [model]="items">
+				<ng-template pTemplate="item" let-item>
+					<ng-container>
+						<a [routerLink]="item.routerLink" class="p-menuitem-link" routerLinkActive="router-active">
+							<span class="material-symbols-outlined">
+								{{ item.icon }}
+							</span>
+							<span class="ml-2">{{ item.label }}</span>
+						</a>
+					</ng-container>
+				</ng-template>
+			</p-menubar>
+		</div>
+	</div>
+
+	<div class="flex-grow overflow-auto h-full">
+		<router-outlet></router-outlet>
+	</div>
+</div>

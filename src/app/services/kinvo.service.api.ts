@@ -5,11 +5,15 @@ import { KinvoApiResponse } from "../dtos/kinvo-api-response";
 import { KinvoCapitalGain } from "../dtos/kinvo-capital-gain";
 import { KinvoLogin } from "../dtos/kinvo-login";
 import { KinvoPortfolio } from "../dtos/kinvo-portfolio";
+import { KinvoPortfolioGoalStatus } from "../dtos/kinvo-portfolio-goal-status";
+import { KinvoPortfolioProduct } from "../dtos/kinvo-portfolio-product";
+import { KinvoPortfolioProductStatement } from "../dtos/kinvo-portfolio-product-statement";
 import { KinvoPortfolioProfitability } from "../dtos/kinvo-portfolio-profitability";
-import { environment } from "../environments/environment";
 import { CacheService } from "./cache.service";
 
-@Injectable()
+@Injectable({
+	providedIn: "root",
+})
 export class KinvoServiceApi {
 
 	url_base = "kinvo/";
@@ -18,31 +22,6 @@ export class KinvoServiceApi {
 		private http: HttpClient,
 		private cacheService: CacheService,
 	) { }
-
-	private saveLogin(user: string, password: string, token: string) {
-		environment.kinvo_user = user;
-		environment.kinvo_password = password;
-		environment.kinvo_token = token;
-		// localStorage.setItem("kinvo_user", user);
-		// localStorage.setItem("kinvo_password", password);
-	}
-
-	private saveLogout() {
-		environment.kinvo_user = "";
-		environment.kinvo_password = "";
-		environment.kinvo_token = "";
-		// localStorage.removeItem("kinvo_user");
-		// localStorage.removeItem("kinvo_password");
-	}
-
-	public loadLogin() {
-		// environment.kinvo_user = localStorage.getItem("kinvo_user")!;
-		// environment.kinvo_password = localStorage.getItem("kinvo_password")!;
-	}
-
-	public logout() {
-		this.saveLogout();
-	}
 
 	public login(user: string, password: string) {
 
@@ -53,13 +32,16 @@ export class KinvoServiceApi {
 
 		return this.http.post<KinvoApiResponse<KinvoLogin>>
 			(`${this.url_base}v4/auth/login`, json_data) // 'v3/auth/login'
-			.pipe(
-				tap(response => {
-					if (response.success) {
-						this.saveLogin(user, password, response.data.accessToken);
-					}
-				})
-			);
+	}
+
+	public refreshToken(refreshToken: string) {
+
+		const json_data = {
+			refreshToken: refreshToken
+		};
+
+		return this.http.post<KinvoApiResponse<KinvoLogin>>
+			(`${this.url_base}auth/sessions/refresh-token`, json_data)
 	}
 
 	public getPortfolios() {
@@ -74,7 +56,9 @@ export class KinvoServiceApi {
 			(`${this.url_base}portfolio-command/portfolio/getPortfolios`)
 			.pipe(
 				tap(response => {
-					this.cacheService.set(key, response);
+					if (response.success) {
+						this.cacheService.set(key, response);
+					}
 				})
 			);
 	}
@@ -91,7 +75,9 @@ export class KinvoServiceApi {
 			(`${this.url_base}portfolio-query/PortfolioAnalysis/GetPeriodicPortfolioProfitability/${id}/${period}`)
 			.pipe(
 				tap(response => {
-					this.cacheService.set(key, response);
+					if (response.success) {
+						this.cacheService.set(key, response);
+					}
 				})
 			);
 	}
@@ -108,7 +94,66 @@ export class KinvoServiceApi {
 			(`${this.url_base}capital-gain/by-portfolio/${id}`)
 			.pipe(
 				tap(response => {
-					this.cacheService.set(key, response);
+					if (response.success) {
+						this.cacheService.set(key, response);
+					}
+				})
+			);
+	}
+
+	public getPortfolioGoalStatusByPortfolio(id: number) {
+
+		const key = `getPortfolioGoalStatusByPortfolio-${id}`;
+
+		if (this.cacheService.get(key)) {
+			return this.cacheService.getObservable<KinvoApiResponse<KinvoPortfolioGoalStatus>>(key);
+		}
+
+		return this.http.get<KinvoApiResponse<KinvoPortfolioGoalStatus>>
+			(`${this.url_base}simpleEquityGoal/getPortfolioGoalStatus/${id}`)
+			.pipe(
+				tap(response => {
+					if (response.success) {
+						this.cacheService.set(key, response);
+					}
+				})
+			);
+	}
+
+	public getPortfolioProductByPortfolio(id: number) {
+
+		const key = `getPortfolioProductByPortfolio-${id}`;
+
+		if (this.cacheService.get(key)) {
+			return this.cacheService.getObservable<KinvoApiResponse<KinvoPortfolioProduct[]>>(key);
+		}
+
+		return this.http.get<KinvoApiResponse<KinvoPortfolioProduct[]>>
+			(`${this.url_base}portfolio-command/portfolioProduct/GetByPortfolio/${id}`)
+			.pipe(
+				tap(response => {
+					if (response.success) {
+						this.cacheService.set(key, response);
+					}
+				})
+			);
+	}
+
+	public getProductStatementByProduct(id: number) {
+
+		const key = `getProductStatementByProduct-${id}`;
+
+		if (this.cacheService.get(key)) {
+			return this.cacheService.getObservable<KinvoApiResponse<KinvoPortfolioProductStatement[]>>(key);
+		}
+
+		return this.http.get<KinvoApiResponse<KinvoPortfolioProductStatement[]>>
+			(`${this.url_base}portfolio-query/Statement/getProductStatement/${id}`)
+			.pipe(
+				tap(response => {
+					if (response.success) {
+						this.cacheService.set(key, response);
+					}
 				})
 			);
 	}

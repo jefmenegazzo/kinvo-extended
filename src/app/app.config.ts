@@ -3,10 +3,15 @@ import { ApplicationConfig, isDevMode, provideZoneChangeDetection } from "@angul
 import { provideAnimationsAsync } from "@angular/platform-browser/animations/async";
 import { provideRouter } from "@angular/router";
 import { provideServiceWorker } from "@angular/service-worker";
+import 'chartjs-adapter-date-fns';
+import 'chartjs-plugin-datalabels';
+import { ptBR } from 'date-fns/locale/pt-BR';
+import { setDefaultOptions } from "date-fns/setDefaultOptions";
 import { MessageService } from "primeng/api";
 import { routes } from "./app.routes";
 import { requestInterceptor } from "./interceptors/request.interceptor";
 import { CacheService } from "./services/cache.service";
+setDefaultOptions({ locale: ptBR })
 
 export const appConfig: ApplicationConfig = {
 	providers: [

@@ -1,0 +1,35 @@
+export interface KinvoPortfolioProductStatement {
+	rowNumber: number;
+	id: number;
+	description: string;
+	date: string;
+	positionDate: string | null;
+	equity: number;
+	incomeTax: number | null;
+	iof: number | null;
+	applicationId: number;
+	movementType: number;
+	movementSubtype: number | null;
+	isFullRedemption: boolean;
+	amount: number;
+	value: number;
+	currentAmount: number;
+	currentValue: number;
+	applicationCurrentEquity: number;
+	recordType: number;
+	eventTypeId: number;
+	cost: number | null;
+	bovespaStockEventTypeId: number | null;
+	factor: number | null;
+	isWaitingForQuota: boolean;
+	amountRoundingMargin: number;
+	currencySymbol: string;
+	exchangeValue: number;
+	partnerId: number | null;
+	partnerUserId: number | null;
+	partnerUserAlias: string | null;
+	partnerName: string | null;
+	hasBeenImported: boolean;
+	movementCanBeUpdated: boolean;
+	portfolioProductHeritance: number;
+}
