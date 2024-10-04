@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1728039698237,
+  "timestamp": 1728040534634,
   "index": "./index.html",
   "assetGroups": [
     {
@@ -88,7 +88,7 @@
     "./kinvo-extended-logo.svg": "ba0ee2c4ebe499596fe722935bcd6eac02876e5f",
     "./logo.svg": "e22e8155d30c89354d7ec86ff3c101d36047e6bc",
     "./main-2TAHUIWW.js": "6841840da52f6273843cbe1d8ddb27cc75d68e8f",
-    "./manifest.webmanifest": "493ea817808fdd13fd5834ef7a9cb10ab1df637b",
+    "./manifest.webmanifest": "7cd1e27f1b0fc246c6483240b591a44d1d0e39cb",
     "./media/Inter-italic.var-SWFAXF2C.woff2": "6f20a046917bf86d4b6cc29c4e2515bd64d2cb9b",
     "./media/Inter-roman.var-WIJJYAE4.woff2": "7a2602d2ebb08ce895e33addb6fe595f1029431e",
     "./media/color-3LUHUBGQ.png": "ff4c4bcb2207891b292f544edb4da9d2df5d45cf",
