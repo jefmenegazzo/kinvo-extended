@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1728304035693,
+  "timestamp": 1728317780542,
   "index": "./index.html",
   "assetGroups": [
     {
@@ -13,6 +13,7 @@
       "urls": [
         "./chunk-4JMCAVKY.js",
         "./chunk-4YRY4IP2.js",
+        "./chunk-65YQ4GKX.js",
         "./chunk-6YXWB3FT.js",
         "./chunk-7246HQZJ.js",
         "./chunk-A6KY3WA2.js",
@@ -21,12 +22,11 @@
         "./chunk-DQSKJLJO.js",
         "./chunk-OK6M3RHN.js",
         "./chunk-Q2WMK2AJ.js",
-        "./chunk-SPFG5CEY.js",
         "./chunk-VNPTLQ74.js",
         "./chunk-VPPULL3P.js",
         "./favicon.ico",
         "./index.html",
-        "./main-SV3NAQGY.js",
+        "./main-N5JYEKBS.js",
         "./manifest.webmanifest",
         "./polyfills-H2K4KJRD.js",
         "./styles-L7BNLYA3.css"
@@ -68,6 +68,7 @@
   "hashTable": {
     "./chunk-4JMCAVKY.js": "196b4fadb556f33f56f5300024fceb713f1f1312",
     "./chunk-4YRY4IP2.js": "0edff1528b9c9c28549f3f98eb43e7d5b3da3d92",
+    "./chunk-65YQ4GKX.js": "14d1dd9fd570f8dc4b5dc440979d43dae17d10ac",
     "./chunk-6YXWB3FT.js": "c74c496df273e81d3002712d173e92b4ea68db3d",
     "./chunk-7246HQZJ.js": "470dbaaeba689e7c10d98218793d15c6377fcca7",
     "./chunk-A6KY3WA2.js": "6cd89d3ad9c87e30dfe385c3331bfb77165581f0",
@@ -76,7 +77,6 @@
     "./chunk-DQSKJLJO.js": "bb85a51d9c09b5ce3634bc38a8c3db419baa995c",
     "./chunk-OK6M3RHN.js": "021c4d87caad02788bbf2456b90b2faa4e1ef5f0",
     "./chunk-Q2WMK2AJ.js": "d4c7a3f560a3359d894cafc7c0950cca99b28a23",
-    "./chunk-SPFG5CEY.js": "e7956fba1e67ed40c25dca8de6e3780184d8db13",
     "./chunk-VNPTLQ74.js": "48f08e3dcff2a6b6635210f85942773bbe8b7f27",
     "./chunk-VPPULL3P.js": "c754cd4c28075d64a699d6409c22ddf72f7a37cb",
     "./favicon.ico": "eb3e94c5c5c8ce9e35b18e87bdfd5b571d6df415",
@@ -88,10 +88,10 @@
     "./icons/icon-512x512.png": "749f10596905de469967e9990527fb57d37b4749",
     "./icons/icon-72x72.png": "dbaec3e682ebe982970e2869182921d650785834",
     "./icons/icon-96x96.png": "65be5077af2ae07f72cd85e92c129c56dab6382e",
-    "./index.html": "2f2805131c05b22f08487d5d0085369057e54310",
+    "./index.html": "ed5cf7af5acb1df97577f7914c584ac50a654daa",
     "./kinvo-extended-logo.svg": "ba0ee2c4ebe499596fe722935bcd6eac02876e5f",
     "./logo.svg": "e22e8155d30c89354d7ec86ff3c101d36047e6bc",
-    "./main-SV3NAQGY.js": "b05f738c582c7aa5d4dd2deead733f637dcb354d",
+    "./main-N5JYEKBS.js": "a9d9af9a14038201bb2f3a72fcd13f1b9fd38005",
     "./manifest.webmanifest": "7cd1e27f1b0fc246c6483240b591a44d1d0e39cb",
     "./media/Inter-italic.var-SWFAXF2C.woff2": "6f20a046917bf86d4b6cc29c4e2515bd64d2cb9b",
     "./media/Inter-roman.var-WIJJYAE4.woff2": "7a2602d2ebb08ce895e33addb6fe595f1029431e",
