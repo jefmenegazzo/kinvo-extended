@@ -12,13 +12,23 @@ export const routes: Routes = [
 		loadChildren: () => import("./components/login/login.routes").then((m) => m.remoteRoutes),
 	},
 	{
+		path: "analises",
+		loadChildren: () => import("./components/rentabilidade/rentabilidade.routes").then((m) => m.remoteRoutes),
+		canActivate: [loginGuard],
+	},
+	{
 		path: "ativos",
 		loadChildren: () => import("./components/ativos/ativos.routes").then((m) => m.remoteRoutes),
 		canActivate: [loginGuard],
 	},
 	{
-		path: "distribuicao",
-		loadChildren: () => import("./components/distribuicao/distribuicao.routes").then((m) => m.remoteRoutes),
+		path: "extrato",
+		loadChildren: () => import("./components/extrato/extrato.routes").then((m) => m.remoteRoutes),
+		canActivate: [loginGuard],
+	},
+	{
+		path: "sincronizacao",
+		loadChildren: () => import("./components/sincronizacao/sincronizacao.routes").then((m) => m.remoteRoutes),
 		canActivate: [loginGuard],
 	},
 	{
@@ -26,9 +36,5 @@ export const routes: Routes = [
 		loadChildren: () => import("./components/lista-fundos-investimento/lista-fundos-investimento.routes").then((m) => m.remoteRoutes),
 		canActivate: [loginGuard],
 	},
-	{
-		path: "rentabilidade",
-		loadChildren: () => import("./components/rentabilidade/rentabilidade.routes").then((m) => m.remoteRoutes),
-		canActivate: [loginGuard],
-	},
+
 ];

@@ -11,7 +11,7 @@ export function requestInterceptor(req: HttpRequest<unknown>, next: HttpHandlerF
 	const messageService = inject(MessageService);
 	const cacheService = inject(CacheService);
 
-	if (req.url.startsWith("kinvo") && cacheService.get(KINVO_KEYS.TOKEN)) {
+	if (cacheService.get(KINVO_KEYS.TOKEN)) { // req.url.startsWith("kinvo") &&
 
 		req = req.clone({
 			setHeaders: {

@@ -1,18 +1,18 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { CommonModule, CurrencyPipe } from "@angular/common";
+import { CommonModule, CurrencyPipe, PercentPipe } from "@angular/common";
 import { Component, OnInit } from "@angular/core";
 import { FormsModule } from "@angular/forms";
-import { ChartData, ChartDataset, ChartOptions, Plugin } from "chart.js";
-import ChartDataLabels from 'chartjs-plugin-datalabels';
-import { format, lastDayOfMonth, max, min, parse, parseISO } from 'date-fns';
+import { ChartData, ChartDataset, ChartOptions, ChartType, Plugin } from "chart.js";
+import ChartDataLabels from "chartjs-plugin-datalabels";
+import { format, lastDayOfMonth, max, min, parse, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale/pt-BR";
 import { ButtonModule } from "primeng/button";
 import { CalendarModule } from "primeng/calendar";
 import { ChartModule } from "primeng/chart";
-import { DropdownModule } from 'primeng/dropdown';
-import { SelectButtonModule } from 'primeng/selectbutton';
-import { SkeletonModule } from 'primeng/skeleton';
+import { DropdownModule } from "primeng/dropdown";
+import { SelectButtonModule } from "primeng/selectbutton";
+import { SkeletonModule } from "primeng/skeleton";
 import { TableModule } from "primeng/table";
 import { finalize, forkJoin, tap } from "rxjs";
 import { KinvoApiResponse } from "../../dtos/kinvo-api-response";
@@ -20,8 +20,13 @@ import { KinvoCapitalGain } from "../../dtos/kinvo-capital-gain";
 import { KinvoPortfolio } from "../../dtos/kinvo-portfolio";
 import { KinvoPortfolioProduct } from "../../dtos/kinvo-portfolio-product";
 import { KinvoPortfolioProfitability } from "../../dtos/kinvo-portfolio-profitability";
-import { CapitalGainByProductTableItem } from "../../models/capital-gain-by-product-table-item";
+import { aggregationKeysFirst, aggregationKeysJurosCompostos, aggregationKeysLast, aggregationKeysPercentRelative, aggregationKeysSum, DataFull } from "../../models/data-full";
+import { DataProfitability } from "../../models/data-profitability";
 import { KinvoServiceApi } from "../../services/kinvo.service.api";
+
+type DataAnalysisType = "Resumo" | "Rentabilidade" | "Ganho de Capital" | "Movimentação" | "Patrimônio" | "Distribuição";
+type DataInterval = "Do Início" | "No Ano" | "No Mês" | "3 Meses" | "6 Meses" | "12 Meses" | "24 Meses" | "36 Meses" | "Personalizado";
+type DataAggregator = "Dia" | "Mês" | "Ano" | "Total";
 
 @Component({
 	selector: "app-rentabilidade",
@@ -39,11 +44,11 @@ import { KinvoServiceApi } from "../../services/kinvo.service.api";
 	],
 	providers: [
 		KinvoServiceApi,
-		CurrencyPipe
+		CurrencyPipe,
+		PercentPipe
 	],
 	templateUrl: "./rentabilidade.component.html",
-	styleUrl: "./rentabilidade.component.scss",
-	// changeDetection: ChangeDetectionStrategy.OnPush
+	styleUrl: "./rentabilidade.component.scss"
 })
 export class RentabilidadeComponent implements OnInit {
 
@@ -51,32 +56,34 @@ export class RentabilidadeComponent implements OnInit {
 	portfolioDataSelected!: number;
 	portfolioDataLoading: boolean = false;
 
-	dataAnalysisTypes: string[] = ["Tabela Resumo", "Rentabilidade", "Ganho de Capital", "Movimentação", "Patrimônio"]
-	dataAnalysisTypesSelected: string = this.dataAnalysisTypes[0];
+	dataAnalysisTypes: DataAnalysisType[] = ["Resumo", "Rentabilidade", "Ganho de Capital", "Movimentação", "Patrimônio", "Distribuição"];
+	dataAnalysisTypesSelected: DataAnalysisType = this.dataAnalysisTypes[0];
 
-	dataIntervalOptions: string[] = ["No Mês", "3 Meses", "6 Meses", "12 Meses", "24 Meses", "No Ano", "Do Início", "Personalizado"]
-	dataIntervalOptionsSelected: string = this.dataIntervalOptions[6];
+	dataIntervalOptions: DataInterval[] = ["Do Início", "No Ano", "No Mês", "3 Meses", "6 Meses", "12 Meses", "24 Meses", "36 Meses", "Personalizado"];
+	dataIntervalOptionsSelected: DataInterval = this.dataIntervalOptions[0];
 	dateRange: Date[] | undefined = [];
 
-	chartType: "bar" | "line" | "scatter" | "bubble" | "pie" | "doughnut" | "polarArea" | "radar" = "line";
+	aggregatorOptions: DataAggregator[] = ["Mês", "Ano"];
+	aggregatorOptionsSelected: DataAggregator | undefined = this.aggregatorOptions[0];
+
+	chartType: ChartType | undefined;
 	chartData: ChartData | undefined;
 	chartOptions: ChartOptions | undefined;
 	chartPlugins: Plugin[] = [];
+	chartHeight: string = "100%";
 
-	tableData: CapitalGainByProductTableItem[] = [];
-	tableDataTotalsRow: CapitalGainByProductTableItem = {} as CapitalGainByProductTableItem;
-	tableColumns: (keyof CapitalGainByProductTableItem)[] = [
-		"monthlyReferenceDate", "valueApplied", "initialEquity", "applications", "redemptions", "movementations",
-		"returns", "proceeds", "capitalGain", "finalEquity", "incomeTax", "iof", "cost", "charges",
-		"profitabilityCarteira", "profitabilityCdi", "profitabilityIbov", "profitabilityInflacao", "profitabilityPoupanca"
-	];
+	tableData: DataFull[] = [];
+	tableDataTotalsRow: DataFull = {} as DataFull;
 
-	dataFull: CapitalGainByProductTableItem[] = [];
+	monthlyDataFull: DataFull[] = []; // Mensal
+	dailyDataProfitability!: DataProfitability[]; // Diário
+
 	dataFullLoading: boolean = false;
 
 	constructor(
 		private kinvoServiceApi: KinvoServiceApi,
-		private currencyPipe: CurrencyPipe
+		private currencyPipe: CurrencyPipe,
+		private percentPipe: PercentPipe
 	) { }
 
 	ngOnInit() {
@@ -112,50 +119,56 @@ export class RentabilidadeComponent implements OnInit {
 
 	onDataIntervalChange(event?: Date[]) {
 
-		const allMonths = this.dataFull.map(element => element.monthlyReferenceDate);
+		const allMonths = this.monthlyDataFull.map(element => element.referenceDate);
 		let [minMonth, maxMonth]: [Date | undefined, Date | undefined] = [min(allMonths), max(allMonths)];
 
 		switch (this.dataIntervalOptionsSelected) {
-			case "No Mês":
-				minMonth = new Date();
+			case this.dataIntervalOptions[0]: // "Do Início":
 				minMonth.setDate(1);
 				minMonth.setHours(0, 0, 0, 0);
 				break;
-			case "3 Meses":
-				minMonth = new Date();
-				minMonth.setMonth(minMonth.getMonth() - 2);
-				minMonth.setDate(1);
-				minMonth.setHours(0, 0, 0, 0);
-				break;
-			case "6 Meses":
-				minMonth = new Date();
-				minMonth.setMonth(minMonth.getMonth() - 5);
-				minMonth.setDate(1);
-				minMonth.setHours(0, 0, 0, 0);
-				break;
-			case "12 Meses":
-				minMonth = new Date();
-				minMonth.setMonth(minMonth.getMonth() - 11);
-				minMonth.setDate(1);
-				minMonth.setHours(0, 0, 0, 0);
-				break;
-			case "24 Meses":
-				minMonth = new Date();
-				minMonth.setMonth(minMonth.getMonth() - 23);
-				minMonth.setDate(1);
-				minMonth.setHours(0, 0, 0, 0);
-				break;
-			case "No Ano":
+			case this.dataIntervalOptions[1]: // "No Ano":
 				minMonth = new Date();
 				minMonth.setMonth(0);
 				minMonth.setDate(1);
 				minMonth.setHours(0, 0, 0, 0);
 				break;
-			case "Do Início":
+			case this.dataIntervalOptions[2]: // "No Mês":
+				minMonth = new Date();
 				minMonth.setDate(1);
 				minMonth.setHours(0, 0, 0, 0);
 				break;
-			case "Personalizado":
+			case this.dataIntervalOptions[3]: // "3 Meses":
+				minMonth = new Date();
+				minMonth.setMonth(minMonth.getMonth() - 2);
+				minMonth.setDate(1);
+				minMonth.setHours(0, 0, 0, 0);
+				break;
+			case this.dataIntervalOptions[4]: // "6 Meses":
+				minMonth = new Date();
+				minMonth.setMonth(minMonth.getMonth() - 5);
+				minMonth.setDate(1);
+				minMonth.setHours(0, 0, 0, 0);
+				break;
+			case this.dataIntervalOptions[5]: // "12 Meses":
+				minMonth = new Date();
+				minMonth.setMonth(minMonth.getMonth() - 11);
+				minMonth.setDate(1);
+				minMonth.setHours(0, 0, 0, 0);
+				break;
+			case this.dataIntervalOptions[6]: // "24 Meses":
+				minMonth = new Date();
+				minMonth.setMonth(minMonth.getMonth() - 23);
+				minMonth.setDate(1);
+				minMonth.setHours(0, 0, 0, 0);
+				break;
+			case this.dataIntervalOptions[7]: // "36 Meses":
+				minMonth = new Date();
+				minMonth.setMonth(minMonth.getMonth() - 35);
+				minMonth.setDate(1);
+				minMonth.setHours(0, 0, 0, 0);
+				break;
+			case this.dataIntervalOptions[8]: // "Personalizado":
 
 				if (event) {
 					minMonth = event![0];
@@ -178,6 +191,43 @@ export class RentabilidadeComponent implements OnInit {
 	}
 
 	onDataAnalysisTypeChange() {
+
+		switch (this.dataAnalysisTypesSelected) {
+			case this.dataAnalysisTypes[0]: // "Resumo"
+				this.aggregatorOptions = ["Mês", "Ano"];
+				this.aggregatorOptionsSelected = "Mês";
+				break;
+
+			case this.dataAnalysisTypes[1]: // "Rentabilidade"
+				this.aggregatorOptions = ["Dia", "Mês", "Ano"];
+				this.aggregatorOptionsSelected = "Dia";
+				break;
+
+			case this.dataAnalysisTypes[2]: // "Ganho de Capital"
+				this.aggregatorOptions = ["Mês", "Ano"];
+				this.aggregatorOptionsSelected = "Mês";
+				break;
+
+			case this.dataAnalysisTypes[3]: // "Movimentação"
+				this.aggregatorOptions = ["Mês", "Ano"];
+				this.aggregatorOptionsSelected = "Mês";
+				break;
+
+			case this.dataAnalysisTypes[4]: // "Patrimônio"
+				this.aggregatorOptions = ["Mês", "Ano"];
+				this.aggregatorOptionsSelected = "Mês";
+				break;
+
+			case this.dataAnalysisTypes[5]: // "Distribuição"
+				this.aggregatorOptions = ["Total"];
+				this.aggregatorOptionsSelected = "Total";
+				break;
+		}
+
+		this.applyDataFilters();
+	}
+
+	onAggregatorChange() {
 		this.applyDataFilters();
 	}
 
@@ -187,10 +237,9 @@ export class RentabilidadeComponent implements OnInit {
 			return;
 		}
 
-		this.dataFullLoading = true
+		this.dataFullLoading = true;
 		this.tableData = [];
 		this.chartData = undefined;
-		this.chartOptions = undefined;
 
 		forkJoin([
 			this.kinvoServiceApi.getCapitalGainByPortfolio(this.portfolioDataSelected),
@@ -227,10 +276,10 @@ export class RentabilidadeComponent implements OnInit {
 		});
 	}
 
-	createCapitalGainByProductTableItem(monthlyReferenceDate: string): CapitalGainByProductTableItem {
+	createDataFull(date: string, dateFormat?: string): DataFull {
 
 		return {
-			monthlyReferenceDate: parseISO(monthlyReferenceDate),
+			referenceDate: dateFormat ? parse(date, dateFormat, new Date(), { locale: ptBR }) : parseISO(date),
 			valueApplied: 0,
 			initialEquity: 0,
 			applications: 0,
@@ -256,14 +305,18 @@ export class RentabilidadeComponent implements OnInit {
 		};
 	}
 
+	calcPercentOrNA(value: number, total: number): number | undefined {
+		return value < 0 || total <= 0 ? undefined : value / total;
+	}
+
 	mergeDataFull(capitalGain: KinvoApiResponse<KinvoCapitalGain>, profitability: KinvoApiResponse<KinvoPortfolioProfitability>, products: KinvoApiResponse<KinvoPortfolioProduct[]>) {
 
-		let dataAggregatedByMonth: Record<string, CapitalGainByProductTableItem> = {};
+		let dataAggregatedByMonth: Record<string, DataFull> = {};
 
 		for (const element of capitalGain.data.capitalGainByProductInTheMonth) {
 
 			if (!dataAggregatedByMonth[element.monthlyReferenceDate]) {
-				dataAggregatedByMonth[element.monthlyReferenceDate] = this.createCapitalGainByProductTableItem(element.monthlyReferenceDate);
+				dataAggregatedByMonth[element.monthlyReferenceDate] = this.createDataFull(element.monthlyReferenceDate);
 			}
 
 			const tableRow = dataAggregatedByMonth[element.monthlyReferenceDate];
@@ -277,8 +330,8 @@ export class RentabilidadeComponent implements OnInit {
 			tableRow.finalEquity += element.finalEquity;
 		}
 
-		const capitalGainTable = Object.values(dataAggregatedByMonth);
-		capitalGainTable.sort((a, b) => b.monthlyReferenceDate.getTime() - a.monthlyReferenceDate.getTime());
+		const capitalGainTableByMonth = Object.values(dataAggregatedByMonth);
+		capitalGainTableByMonth.sort((a, b) => b.referenceDate.getTime() - a.referenceDate.getTime());
 
 		dataAggregatedByMonth = {};
 
@@ -291,7 +344,7 @@ export class RentabilidadeComponent implements OnInit {
 				const monthlyReferenceDate = referenceDate.toISOString();
 
 				if (!dataAggregatedByMonth[monthlyReferenceDate]) {
-					dataAggregatedByMonth[monthlyReferenceDate] = this.createCapitalGainByProductTableItem(monthlyReferenceDate);
+					dataAggregatedByMonth[monthlyReferenceDate] = this.createDataFull(monthlyReferenceDate);
 				}
 
 				const tableRow = dataAggregatedByMonth[monthlyReferenceDate];
@@ -311,295 +364,674 @@ export class RentabilidadeComponent implements OnInit {
 			}
 		}
 
-		const productsStatements = Object.values(dataAggregatedByMonth);
-		productsStatements.sort((a, b) => b.monthlyReferenceDate.getTime() - a.monthlyReferenceDate.getTime());
+		const productsStatementsByMonth = Object.values(dataAggregatedByMonth);
+		productsStatementsByMonth.sort((a, b) => b.referenceDate.getTime() - a.referenceDate.getTime());
 
-		const profitabilityCategories = profitability.data.monthlyProfitabilityToChart.categories;
-		const profitabilitySeries = profitability.data.monthlyProfitabilityToChart.series;
-		const profitabilityMonthyData = {
-			months: profitabilityCategories.map(element => parse(element as string, 'MMM. yy', new Date(), { locale: ptBR })),
-			carteira: profitabilitySeries.find((serie: any) => serie.name === "Carteira")?.data,
-			cdi: profitabilitySeries.find((serie: any) => serie.name === "CDI")?.data,
-			ibov: profitabilitySeries.find((serie: any) => serie.name === "IBOV")?.data,
-			inflacao: profitabilitySeries.find((serie: any) => serie.name === "Inflação (IPCA)")?.data,
-			poupanca: profitabilitySeries.find((serie: any) => serie.name === "Poupança")?.data
+		let profitabilityCategories = profitability.data.monthlyProfitabilityToChart.categories;
+		let profitabilitySeries = profitability.data.monthlyProfitabilityToChart.series;
+		let profitabilityCarteira = profitabilitySeries.find(serie => serie.name === "Carteira")!.data;
+		let profitabilityCdi = profitabilitySeries.find(serie => serie.name === "CDI")!.data;
+		let profitabilityIbov = profitabilitySeries.find(serie => serie.name === "IBOV")!.data;
+		let profitabilityInflacao = profitabilitySeries.find(serie => serie.name === "Inflação (IPCA)")!.data;
+		let profitabilityPoupanca = profitabilitySeries.find(serie => serie.name === "Poupança")!.data;
+
+		const profitabilityDataByMonth: DataProfitability[] = [];
+
+		for (let i = 0; i < profitabilityCategories.length; i++) {
+			profitabilityDataByMonth.push({
+				referenceDate: parse(profitabilityCategories[i] as string, "MMM. yy", new Date(), { locale: ptBR }),
+				carteira: profitabilityCarteira[i],
+				cdi: profitabilityCdi[i],
+				ibov: profitabilityIbov[i],
+				inflacao: profitabilityInflacao[i],
+				poupanca: profitabilityPoupanca[i]
+			});
+		}
+
+		const transformPercent = (value: number | undefined): number => {
+			return (value || 0) / 100;
 		};
 
-		for (const element of capitalGainTable) {
-			const productsStatementsElement = productsStatements.find(iterator => iterator.monthlyReferenceDate.getTime() === element.monthlyReferenceDate.getTime());
-			element.movementations = element.finalEquity - (element.initialEquity + element.capitalGain)
+		for (const element of capitalGainTableByMonth) {
+
+			const productsStatementsElement = productsStatementsByMonth.find(iterator => iterator.referenceDate.getTime() === element.referenceDate.getTime());
+			element.movementations = element.finalEquity - (element.initialEquity + element.capitalGain);
 			element.incomeTax = productsStatementsElement?.incomeTax || 0;
 			element.iof = productsStatementsElement?.iof || 0;
 			element.cost = productsStatementsElement?.cost || 0;
-			element.charges = element.incomeTax + element.iof + element.cost
+			element.charges = element.incomeTax + element.iof + element.cost;
 			element.applications = productsStatementsElement?.applications || 0;
 			element.redemptions = productsStatementsElement?.redemptions || 0;
 			element.proceeds = productsStatementsElement?.proceeds || 0;
 
-			const profitabilityMonthyDataIndex = profitabilityMonthyData.months.findIndex(date => date.getTime() === element.monthlyReferenceDate.getTime());
-			element.profitabilityCarteira = (profitabilityMonthyData?.carteira?.[profitabilityMonthyDataIndex] || 0) / 100;
-			element.profitabilityCdi = (profitabilityMonthyData?.cdi?.[profitabilityMonthyDataIndex] || 0) / 100;
-			element.profitabilityIbov = (profitabilityMonthyData?.ibov?.[profitabilityMonthyDataIndex] || 0) / 100;
-			element.profitabilityInflacao = (profitabilityMonthyData?.inflacao?.[profitabilityMonthyDataIndex] || 0) / 100;
-			element.profitabilityPoupanca = (profitabilityMonthyData?.poupanca?.[profitabilityMonthyDataIndex] || 0) / 100;
+			const profitabilityDataElement = profitabilityDataByMonth.find(iterator => iterator.referenceDate.getTime() === element.referenceDate.getTime());
+			element.profitabilityCarteira = transformPercent(profitabilityDataElement?.carteira);
+			element.profitabilityCdi = transformPercent(profitabilityDataElement?.cdi);
+			element.profitabilityIbov = transformPercent(profitabilityDataElement?.ibov);
+			element.profitabilityInflacao = transformPercent(profitabilityDataElement?.inflacao);
+			element.profitabilityPoupanca = transformPercent(profitabilityDataElement?.poupanca);
 
-			element.profitabilityCarteiraPercentCdi = element.profitabilityCarteira < 0 || element.profitabilityCdi < 0 ? undefined : element.profitabilityCarteira / element.profitabilityCdi;
-			element.profitabilityCarteiraPercentIbov = element.profitabilityCarteira < 0 || element.profitabilityIbov < 0 ? undefined : element.profitabilityCarteira / element.profitabilityIbov;
-			element.profitabilityCarteiraPercentInflacao = element.profitabilityCarteira < 0 || element.profitabilityInflacao < 0 ? undefined : element.profitabilityCarteira / element.profitabilityInflacao;
-			element.profitabilityCarteiraPercentPoupanca = element.profitabilityCarteira < 0 || element.profitabilityPoupanca < 0 ? undefined : element.profitabilityCarteira / element.profitabilityPoupanca;
+			element.profitabilityCarteiraPercentCdi = this.calcPercentOrNA(element.profitabilityCarteira, element.profitabilityCdi);
+			element.profitabilityCarteiraPercentIbov = this.calcPercentOrNA(element.profitabilityCarteira, element.profitabilityIbov);
+			element.profitabilityCarteiraPercentInflacao = this.calcPercentOrNA(element.profitabilityCarteira, element.profitabilityInflacao);
+			element.profitabilityCarteiraPercentPoupanca = this.calcPercentOrNA(element.profitabilityCarteira, element.profitabilityPoupanca);
 		}
 
-		this.dataFull = capitalGainTable;
+		this.monthlyDataFull = capitalGainTableByMonth;
+
+		profitabilityCategories = profitability.data.dailyProfitabilityToChart.categories;
+		profitabilitySeries = profitability.data.dailyProfitabilityToChart.series;
+		profitabilityCarteira = profitabilitySeries.find(serie => serie.name === "Carteira")!.data;
+		profitabilityCdi = profitabilitySeries.find(serie => serie.name === "CDI")!.data;
+		profitabilityIbov = profitabilitySeries.find(serie => serie.name === "IBOV")!.data;
+		profitabilityInflacao = profitabilitySeries.find(serie => serie.name === "Inflação (IPCA)")!.data;
+		profitabilityPoupanca = profitabilitySeries.find(serie => serie.name === "Poupança")!.data;
+
+		this.dailyDataProfitability = [];
+
+		for (let i = 0; i < profitabilityCategories.length; i++) {
+			this.dailyDataProfitability.push({
+				referenceDate: parseISO(profitabilityCategories[i] as string),
+				carteira: profitabilityCarteira[i],
+				cdi: profitabilityCdi[i],
+				ibov: profitabilityIbov[i],
+				inflacao: profitabilityInflacao[i],
+				poupanca: profitabilityPoupanca[i]
+			});
+		}
 	}
 
-	downloadCSV() {
+	downloadTableCSV() {
 
-		const csvHeader = this.tableColumns.join(';') + '\n'; // header row
-		const csvBody = this.tableData.map(row => this.tableColumns.map(column => {
+		const tableColumns: Record<keyof DataFull, string> = {
+			referenceDate: "Data Referência",
+			valueApplied: "Valor Investido",
+			initialEquity: "Saldo Inicial",
+			applications: "Aplicações",
+			redemptions: "Resgates",
+			movementations: "Movimentações",
+			returns: "Rendimentos",
+			proceeds: "Proventos",
+			capitalGain: "Ganho de Capital",
+			finalEquity: "Saldo Final",
+			incomeTax: "IR",
+			iof: "IOF",
+			cost: "Taxas",
+			charges: "Encargos",
+			profitabilityCarteira: "Rentabilidade Carteira",
+			profitabilityCdi: "Rentabilidade CDI",
+			profitabilityIbov: "Rentabilidade IBOV",
+			profitabilityInflacao: "Rentabilidade Inflação",
+			profitabilityPoupanca: "Rentabilidade Poupança",
+			profitabilityCarteiraPercentCdi: "Rentabilidade Carteira x CDI",
+			profitabilityCarteiraPercentIbov: "Rentabilidade Carteira x IBOV",
+			profitabilityCarteiraPercentInflacao: "Rentabilidade Carteira x Inflação",
+			profitabilityCarteiraPercentPoupanca: "Rentabilidade Carteira x Poupança"
+		};
 
-			let value: number | Date | undefined | string = row[column];
+		const csvHeader = Object.values(tableColumns).join(";") + "\n";
 
-			if (value instanceof Date) {
-				value = format(value, 'MM/yyyy', { locale: ptBR });
+		const csvBody = this.tableData.map(
+			row => Object.keys(tableColumns).map(
+				column => {
 
-			} else if (typeof value === 'number') {
-				value = value.toFixed(4).replace(",", "").replace('.', ',');
+					let value: undefined | string | number | Date = row[column as keyof DataFull];
+
+					if (value instanceof Date) {
+						value = format(value, this.aggregatorOptionsSelected == "Ano" ? "yyyy" : "MM/yyyy", { locale: ptBR });
+
+					} else if (typeof value === "number") {
+						value = value.toFixed(4).replace(",", "").replace(".", ",");
+					}
+
+					return value;
+
+				}
+			).join(";")
+		).join("\n");
+
+		const hiddenElement = document.createElement("a");
+		hiddenElement.href = "data:text/csv;charset=utf-8," + encodeURI(csvHeader + csvBody);
+		hiddenElement.target = "_blank";
+		hiddenElement.download = "data.csv";
+		hiddenElement.click();
+	}
+
+	//  M = C * (1 + i) ^ t
+	calcularJurosCompostos(percentuais: number[]): number {
+
+		let percentualAcumulado = 1;
+
+		for (const percentual of percentuais) {
+			percentualAcumulado *= (1 + percentual);
+		}
+
+		return percentualAcumulado - 1;
+	}
+
+	calcularJurosCompostosAcumulados(percentuais: number[]): number[] {
+
+		let percentualAcumulado = 1;
+
+		return percentuais.map(element => {
+			percentualAcumulado *= (1 + element);
+			return percentualAcumulado - 1;
+		});
+	}
+
+	removerJurosCompostosAcumulados(percentuais: number[]): number[] {
+
+		const valoresDiscretizados: number[] = [];
+
+		for (let i = percentuais.length - 1; i >= 0; i--) {
+
+			if (i === 0) {
+				valoresDiscretizados.push(percentuais[i]);
+
+			} else {
+				const percentual = (percentuais[i] + 1) / (percentuais[i - 1] + 1) - 1;
+				valoresDiscretizados.push(percentual);
+			}
+		}
+
+		valoresDiscretizados.reverse();
+		return valoresDiscretizados;
+	}
+
+	filterDataByDateRange<T extends DataFull | DataProfitability>(data: T[]): T[] {
+
+		return data.map(element => ({ ...element } as T)).filter(element => {
+
+			const date = element.referenceDate;
+
+			if (this.dateRange?.[0] && this.dateRange?.[1]) {
+				return date >= this.dateRange[0] && date <= this.dateRange[1];
+
+			} else if (this.dateRange?.[0]) {
+				return date >= this.dateRange[0];
+
+			} else if (this.dateRange?.[1]) {
+				return date <= this.dateRange[1];
 			}
 
-			return value;
+			return false;
+		});
+	}
 
-		}).join(';')).join('\n');
+	aggregateDataByAggregator<T extends DataFull>(data: T[], aggregator: DataAggregator): T[] {
 
-		const hiddenElement = document.createElement('a');
-		hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(csvHeader + csvBody);
-		hiddenElement.target = '_blank';
-		hiddenElement.download = 'data.csv';
-		hiddenElement.click();
+		const dataAggregated: Record<string, T[]> = {};
+		let dateFormat: string = "DD/MM/yyyy";
+		data.sort((a, b) => a.referenceDate.getTime() - b.referenceDate.getTime());
+
+		switch (aggregator) {
+			case "Ano":
+				dateFormat = "yyyy";
+				break;
+			case "Mês":
+				dateFormat = "MM/yyyy";
+				break;
+			case "Dia":
+				dateFormat = "DD/MM/yyyy";;
+				break;
+			case "Total":
+				dateFormat = "";
+				break;
+		}
+
+		for (const element of data) {
+
+			const date = element.referenceDate;
+			const key = dateFormat ? format(date, dateFormat, { locale: ptBR }) : "";
+
+			if (!dataAggregated[key]) {
+				dataAggregated[key] = [];
+			}
+
+			dataAggregated[key].push(element);
+		}
+
+		const dataFiltered = Object.entries(dataAggregated).map(([key, elements]) => {
+
+			// Total
+			if (!key) {
+				key = new Date().toISOString();
+			}
+
+			const row = this.createDataFull(key, dateFormat);
+			aggregationKeysFirst.forEach(key => row[key] = elements![0][key]);
+			aggregationKeysLast.forEach(key => row[key] = elements![elements!.length - 1][key]);
+			aggregationKeysSum.forEach(key => row[key] = elements!.reduce((acc, element) => acc + element[key]!, 0));
+			aggregationKeysJurosCompostos.forEach(key => row[key] = this.calcularJurosCompostos(elements.map(element => element[key]!)));
+			aggregationKeysPercentRelative.forEach((key, index) => row[key] = this.calcPercentOrNA(row.profitabilityCarteira, row[aggregationKeysJurosCompostos[index]]!));
+
+			return row;
+		});
+
+		dataFiltered.sort((a, b) => b.referenceDate.getTime() - a.referenceDate.getTime());
+		return dataFiltered as T[];
 	}
 
 	applyDataFilters() {
 
+		// Limpeza de Dados
+
 		this.tableData = [];
+		this.tableDataTotalsRow = {} as DataFull;
+
+		this.chartType = undefined;
 		this.chartData = undefined;
 		this.chartOptions = undefined;
-		this.tableDataTotalsRow = this.createCapitalGainByProductTableItem(new Date().toISOString());
+		this.chartPlugins.splice(0, this.chartPlugins.length);
+		this.chartHeight = "100%";
 
-		const filteredData = this.dataFull.filter(element => {
-			const date = element.monthlyReferenceDate;
-			return date >= this.dateRange![0] && date <= this.dateRange![1];
-		});
+		// Filtro de Data e Agregação de Datos
 
-		if (this.dataAnalysisTypesSelected === "Tabela Resumo") {
+		const monthlyDataFiltered = this.aggregateDataByAggregator(
+			this.filterDataByDateRange(this.monthlyDataFull), this.aggregatorOptionsSelected!
+		);
+		const dailyDataProfitabilityFiltered = this.filterDataByDateRange(this.dailyDataProfitability);
 
-			if (this.chartPlugins.includes(ChartDataLabels)) {
-				this.chartPlugins.splice(this.chartPlugins.indexOf(ChartDataLabels), 1);
-			}
+		// let dailyDataProfitabilityFiltered = this.dailyDataProfitability.map(element => ({ ...element }));
 
-			this.tableData = [...filteredData];
+		// const keys = ["carteira", "cdi", "ibov", "inflacao", "poupanca"] as (keyof Omit<DailyDataProfitability, 'day'>)[];
 
-			for (const element of this.tableData) {
-				this.tableDataTotalsRow.valueApplied += element.valueApplied;
-				this.tableDataTotalsRow.initialEquity += element.initialEquity;
-				this.tableDataTotalsRow.applications += element.applications;
-				this.tableDataTotalsRow.redemptions += element.redemptions;
-				this.tableDataTotalsRow.movementations += element.movementations;
-				this.tableDataTotalsRow.returns += element.returns;
-				this.tableDataTotalsRow.proceeds += element.proceeds;
-				this.tableDataTotalsRow.capitalGain += element.capitalGain;
-				this.tableDataTotalsRow.finalEquity += element.finalEquity;
-				this.tableDataTotalsRow.incomeTax += element.incomeTax;
-				this.tableDataTotalsRow.iof += element.iof;
-				this.tableDataTotalsRow.cost += element.cost;
-				this.tableDataTotalsRow.charges += element.charges;
-				this.tableDataTotalsRow.profitabilityCarteira += element.profitabilityCarteira;
-				this.tableDataTotalsRow.profitabilityCdi += element.profitabilityCdi;
-				this.tableDataTotalsRow.profitabilityIbov += element.profitabilityIbov;
-				this.tableDataTotalsRow.profitabilityInflacao += element.profitabilityInflacao;
-				this.tableDataTotalsRow.profitabilityPoupanca += element.profitabilityPoupanca;
-			}
+		// for (const key of keys) {
+		// 	this.removerJurosCompostosAcumulados(
+		// 		dailyDataProfitabilityFiltered.map(element => element[key])
+		// 	).forEach((element, index) => {
+		// 		dailyDataProfitabilityFiltered[index][key] = element;
+		// 	});
+		// }
 
-			this.tableDataTotalsRow.profitabilityCarteiraPercentCdi = this.tableDataTotalsRow.profitabilityCarteira < 0 || this.tableDataTotalsRow.profitabilityCdi < 0 ? undefined : this.tableDataTotalsRow.profitabilityCarteira / this.tableDataTotalsRow.profitabilityCdi;
-			this.tableDataTotalsRow.profitabilityCarteiraPercentIbov = this.tableDataTotalsRow.profitabilityCarteira < 0 || this.tableDataTotalsRow.profitabilityIbov < 0 ? undefined : this.tableDataTotalsRow.profitabilityCarteira / this.tableDataTotalsRow.profitabilityIbov;
-			this.tableDataTotalsRow.profitabilityCarteiraPercentInflacao = this.tableDataTotalsRow.profitabilityCarteira < 0 || this.tableDataTotalsRow.profitabilityInflacao < 0 ? undefined : this.tableDataTotalsRow.profitabilityCarteira / this.tableDataTotalsRow.profitabilityInflacao;
-			this.tableDataTotalsRow.profitabilityCarteiraPercentPoupanca = this.tableDataTotalsRow.profitabilityCarteira < 0 || this.tableDataTotalsRow.profitabilityPoupanca < 0 ? undefined : this.tableDataTotalsRow.profitabilityCarteira / this.tableDataTotalsRow.profitabilityPoupanca;
+		// dailyDataProfitabilityFiltered = this.filterDataByDateRange(dailyDataProfitabilityFiltered);
 
-		} else if (this.dataAnalysisTypesSelected === "Rentabilidade") {
+		// for (const key of keys) {
+		// 	this.calcularJurosCompostosAcumulados(
+		// 		dailyDataProfitabilityFiltered.map(element => element[key])
+		// 	).forEach((element, index) => {
+		// 		dailyDataProfitabilityFiltered[index][key] = element;
+		// 	});
+		// }
 
-			if (this.chartPlugins.includes(ChartDataLabels)) {
-				this.chartPlugins.splice(this.chartPlugins.indexOf(ChartDataLabels), 1);
-			}
+		// FIXME Corrigir remoção de juros compostos
+		const index = dailyDataProfitabilityFiltered.length > 0
+			? this.dailyDataProfitability.indexOf(dailyDataProfitabilityFiltered[0])
+			: -1;
 
-			this.chartType = "line";
+		if (index > 0) {
+			const previous = this.dailyDataProfitability[index - 1];
+			dailyDataProfitabilityFiltered.forEach(element => {
+				element.carteira -= previous.carteira;
+				element.cdi -= previous.cdi;
+				element.ibov -= previous.ibov;
+				element.inflacao -= previous.inflacao;
+				element.poupanca -= previous.poupanca;
+			});
+		}
 
-			this.chartData = {
-				labels: filteredData.map(element => element.monthlyReferenceDate),
-				datasets: ["profitabilityCarteira", "profitabilityCdi", "profitabilityIbov", "profitabilityInflacao", "profitabilityPoupanca"].map(serie => {
+		switch (this.dataAnalysisTypesSelected) {
+			case this.dataAnalysisTypes[0]: // "Resumo"
+				this.buildViewResumo(monthlyDataFiltered);
+				break;
 
-					const result = {
-						label: "",
-						data: [] as number[],
-						fill: false,
-						tension: 0,
-						borderWidth: 1,
-						borderColor: "",
-						backgroundColor: "",
-					};
+			case this.dataAnalysisTypes[1]: // "Rentabilidade"
+				this.buildViewRentabilidade(dailyDataProfitabilityFiltered);
+				break;
 
-					if (serie === "profitabilityCarteira") {
-						result.label = "Carteira";
-						result.data = filteredData.map(element => element.profitabilityCarteira * 100);
-						result.borderColor = '#004D40';
-						result.backgroundColor = '#004D40';
+			case this.dataAnalysisTypes[2]: // "Ganho de Capital"
+				this.buildViewGanhoCapital(monthlyDataFiltered);
+				break;
 
-					} else if (serie === "profitabilityCdi") {
-						result.label = "CDI";
-						result.data = filteredData.map(element => element.profitabilityCdi * 100);
-						result.borderColor = '#01579B';
-						result.backgroundColor = '#01579B';
+			case this.dataAnalysisTypes[3]: // "Movimentação"
+				this.buildViewMovimentacao(monthlyDataFiltered);
+				break;
 
-					} else if (serie === "profitabilityIbov") {
-						result.label = "IBOV";
-						result.data = filteredData.map(element => element.profitabilityIbov * 100);
-						result.borderColor = '#F57F17';
-						result.backgroundColor = '#F57F17';
+			case this.dataAnalysisTypes[4]: // "Patrimônio"
+				this.buildViewPatrimonio(monthlyDataFiltered);
+				break;
 
-					} else if (serie === "profitabilityInflacao") {
-						result.label = "Inflação (IPCA)";
-						result.data = filteredData.map(element => element.profitabilityInflacao * 100);
-						result.borderColor = '#BF360C';
-						result.backgroundColor = '#BF360C';
+			case this.dataAnalysisTypes[5]: // "Distribuição"
+				this.buildViewDistribuicao(monthlyDataFiltered);
+				break;
+		}
+	}
 
-					} else if (serie === "profitabilityPoupanca") {
-						result.label = "Poupança";
-						result.data = filteredData.map(element => element.profitabilityPoupanca * 100);
-						result.borderColor = '#4A148C';
-						result.backgroundColor = '#4A148C';
-					}
+	buildViewResumo(monthlyDataFiltered: DataFull[]) {
+		this.tableData = [...monthlyDataFiltered];
+		this.tableDataTotalsRow = this.aggregateDataByAggregator(this.tableData, "Total")?.[0];
+	}
 
-					return result;
-				})
-			}
+	buildViewRentabilidade(dailyDataProfitabilityFiltered: DataProfitability[]) {
 
-			this.chartOptions = {
-				elements: {
-					point: {
-						radius: 0
-					}
-				},
-				interaction: {
+		if (this.chartPlugins.includes(ChartDataLabels)) {
+			this.chartPlugins.splice(this.chartPlugins.indexOf(ChartDataLabels), 1);
+		}
+
+		this.chartType = "line";
+
+		this.chartData = {
+			labels: dailyDataProfitabilityFiltered.map(element => element.referenceDate),
+			datasets: ["carteira", "cdi", "ibov", "inflacao", "poupanca"].map(serie => {
+
+				const result = {
+					label: "",
+					data: [] as number[],
+					fill: false,
+					tension: 0,
+					borderWidth: 1,
+					borderColor: "",
+					backgroundColor: "",
+				};
+
+				if (serie === "carteira") {
+					result.label = "Carteira";
+					result.data = dailyDataProfitabilityFiltered.map(element => element.carteira);
+					result.borderColor = "#004D40";
+					result.backgroundColor = "#004D40";
+
+				} else if (serie === "cdi") {
+					result.label = "CDI";
+					result.data = dailyDataProfitabilityFiltered.map(element => element.cdi);
+					result.borderColor = "#01579B";
+					result.backgroundColor = "#01579B";
+
+				} else if (serie === "ibov") {
+					result.label = "IBOV";
+					result.data = dailyDataProfitabilityFiltered.map(element => element.ibov);
+					result.borderColor = "#F57F17";
+					result.backgroundColor = "#F57F17";
+
+				} else if (serie === "inflacao") {
+					result.label = "IPCA";
+					result.data = dailyDataProfitabilityFiltered.map(element => element.inflacao);
+					result.borderColor = "#BF360C";
+					result.backgroundColor = "#BF360C";
+
+				} else if (serie === "poupanca") {
+					result.label = "Poupança";
+					result.data = dailyDataProfitabilityFiltered.map(element => element.poupanca);
+					result.borderColor = "#4A148C";
+					result.backgroundColor = "#4A148C";
+				}
+
+				return result;
+			})
+		};
+
+		this.chartOptions = {
+			locale: "pt-BR",
+			indexAxis: "x",
+			interaction: {
+				mode: "index",
+				axis: "x"
+			},
+			elements: {
+				point: {
+					radius: 0
+				}
+			},
+			// maintainAspectRatio: true,
+			// responsive: true,
+			// aspectRatio: 1,
+			maintainAspectRatio: false,
+			aspectRatio: 1,
+			plugins: {
+				// decimation: "min-max",
+				tooltip: {
 					mode: "index",
 					intersect: false,
+					callbacks: {
+						label: (context) => {
+							const label = context.dataset.label || "";
+							const value = context.parsed.y || 0;
+							return `${label}: ${this.percentPipe.transform(value / 100, "1.2-2")}`;
+						}
+					}
 				},
-				maintainAspectRatio: true,
-				responsive: true,
-				// aspectRatio: 1,
-				plugins: {
-					// decimation: "min-max",
-					legend: {
-						position: "bottom",
-						labels: {
-							// color: textColor,
-						},
-					},
-					// title: {
-					// 	text: "Rentabilidade %",
-					// 	display: true,
-					// },
-					// zoom: {
-					// 	pan: {
-					// 		enabled: true,
-					// 		mode: "x",
-					// 	},
-					// 	zoom: {
-					// 		enabled: true,
-					// 		mode: "x",
-					// 	},
-					// },
-
+				legend: {
+					position: "top"
+				}
+			},
+			scales: {
+				// adapters: {
+				// 	date: {
+				// 		locale: ptBR
+				// 	}
+				// },
+				x: {
+					type: "time",
+					time: {
+						displayFormats: {
+							quarter: "MMM YYYY"
+						}
+					}
 				},
-				scales: {
-					// adapters: {
-					// 	date: {
-					// 		locale: ptBR
-					// 	}
-					// },
-					x: {
-						type: 'time',
-						time: {
-							displayFormats: {
-								quarter: 'MMM YYYY'
-							}
+				y: {
+					ticks: {
+						callback: (value: any, index: any, ticks: any) => {
+							return `${this.percentPipe.transform(value / 100, "1.2-2")}`;
 						},
-						// type: 'time',
-						// time: {
-						// 	unit: 'month'
-						// }
-						// type: 'time',
-						// time: {
-						//   // Luxon format string
-						//   tooltipFormat: 'DD T'
-						// },
-						// title: {
-						//   display: true,
-						//   text: 'Date'
-						// }
-						// ticks: {
-						// 	callback: (value: any, index: any, ticks: any) => {
-						// 		console.log(value)
-						// 		return parse() value;
-						// 	}
-						// }
-						// color: textColorSecondary
-						// callback: (value: any, index: any, ticks: any) => {
-						// 	console.log(value, index, ticks);
-
-						// 	return "";
-						// },
-						// },
-						// grid: {
-						//     color: surfaceBorder,
-						//     drawBorder: false
-						// }
-
-					},
-					y: {
-						ticks: {
-							// color: textColorSecondary,
-							callback: (value: any, index: any, ticks: any) => {
-								return `${value}%`;
-							},
-						},
-						grid: {
-							// color: surfaceBorder,
-							// drawBorder: false,
-						},
-					},
+					}
 				},
-			};
+			},
+		};
+	}
 
+	buildViewGanhoCapital(monthlyDataFiltered: DataFull[]) {
 
-		} else if (this.dataAnalysisTypesSelected === "Ganho de Capital") {
+		this.chartType = "bar";
+		this.chartHeight = 75 + (20 * monthlyDataFiltered.length) + "px";
+
+		if (!this.chartPlugins.includes(ChartDataLabels)) {
+			this.chartPlugins.push(ChartDataLabels);
+		}
+
+		this.chartData = {
+			labels: monthlyDataFiltered
+				.map(element => element.referenceDate)
+				.map(element => format(element, this.aggregatorOptionsSelected == "Ano" ? "yyyy" : "MMM/yyyy", { locale: ptBR })),
+			datasets: ["capitalGain", "charges"].map(serie => {
+
+				const result: ChartDataset = {
+					type: "bar",
+					label: "",
+					data: monthlyDataFiltered.map(element => element[serie as keyof DataFull]) as number[],
+					borderWidth: 1,
+					borderColor: "",
+					backgroundColor: "",
+					hidden: serie === "charges",
+					datalabels: {
+						align: "start",
+						font: {
+							family: "Montserrat",
+							weight: 700,
+							size: 10
+						}
+					}
+				};
+
+				switch (serie) {
+					case "capitalGain":
+						result.label = "Ganho de Capital";
+						result.borderColor = (ctx) => ctx.raw as number < 0 ? "#e67c73" : "#26A69A";
+						result.backgroundColor = (ctx) => ctx.raw as number < 0 ? "#e67c73" : "#26A69A";
+						result.datalabels!.align = "start";
+						break;
+
+					case "charges":
+						result.label = "Encargos";
+						result.borderColor = "#FFEB3B";
+						result.backgroundColor = "#FFEB3B";
+						result.datalabels!.align = "end";
+						break;
+				}
+
+				return result;
+			})
+		};
+
+		this.chartOptions = {
+			locale: "pt-BR",
+			indexAxis: "y",
+			interaction: {
+				mode: "index",
+				axis: "y"
+			},
+			responsive: true,
+			// maintainAspectRatio: true,
+			// aspectRatio: 1.5,
+			maintainAspectRatio: false,
+			aspectRatio: 1,
+			plugins: {
+				tooltip: {
+					mode: "index",
+					intersect: false,
+					callbacks: {
+						label: (context) => {
+							const label = context.dataset.label || "";
+							const value = context.parsed.x || 0;
+							return `${label}: ${this.currencyPipe.transform(value, "BRL", "symbol", "1.2-2")}`;
+						}
+					}
+				},
+				legend: {
+					position: "top"
+				},
+				datalabels: {
+					anchor: "end",
+					display: true,
+					formatter: (value, context) => {
+						return `${this.currencyPipe.transform(value, "BRL", "symbol", "1.2-2")}`;
+					}
+				}
+			},
+			scales: {
+				x: {
+					stacked: true,
+					ticks: {
+						callback: (value, index, ticks) => {
+							return `${this.currencyPipe.transform(value, "BRL", "symbol", "1.2-2")}`;
+						},
+					}
+				},
+				y: {
+					stacked: true
+				}
+			}
+		};
+	}
+
+	buildViewMovimentacao(monthlyDataFiltered: DataFull[]) {
+
+		this.chartType = "bar";
+		this.chartHeight = 75 + (20 * monthlyDataFiltered.length) + "px";
+
+		if (!this.chartPlugins.includes(ChartDataLabels)) {
+			this.chartPlugins.push(ChartDataLabels);
+		}
+
+		this.chartData = {
+			labels: monthlyDataFiltered
+				.map(element => element.referenceDate)
+				.map(element => format(element, this.aggregatorOptionsSelected == "Ano" ? "yyyy" : "MMM/yyyy", { locale: ptBR })),
+			datasets: ["movementations"].map(serie => {
+
+				const result: ChartDataset = {
+					type: "bar",
+					label: "Movimentações",
+					data: monthlyDataFiltered.map(element => element.movementations),
+					borderWidth: 1,
+					borderColor: (ctx) => ctx.raw as number < 0 ? "#e67c73" : "#26A69A",
+					backgroundColor: (ctx) => ctx.raw as number < 0 ? "#e67c73" : "#26A69A",
+					datalabels: {
+						align: "start",
+						font: {
+							family: "Montserrat",
+							weight: 700,
+							size: 10
+						}
+					}
+				};
+
+				return result;
+			})
+		};
+
+		this.chartOptions = {
+			locale: "pt-BR",
+			indexAxis: "y",
+			interaction: {
+				mode: "index",
+				axis: "y"
+			},
+			responsive: true,
+			// maintainAspectRatio: true,
+			// aspectRatio: 1.5,
+			aspectRatio: 1,
+			plugins: {
+				tooltip: {
+					mode: "index",
+					intersect: false,
+					callbacks: {
+						label: (context) => {
+							const label = context.dataset.label || "";
+							const value = context.parsed.x || 0;
+							return `${label}: ${this.currencyPipe.transform(value, "BRL", "symbol", "1.2-2")}`;
+						}
+					}
+				},
+				legend: {
+					position: "top"
+				},
+				datalabels: {
+					anchor: "end",
+					display: true,
+					formatter: (value, context) => {
+						return `${this.currencyPipe.transform(value, "BRL", "symbol", "1.2-2")}`;
+					}
+				}
+			},
+			scales: {
+				x: {
+					stacked: true,
+					ticks: {
+						callback: (value, index, ticks) => {
+							return `${this.currencyPipe.transform(value, "BRL", "symbol", "1.2-2")}`;
+						},
+					}
+				},
+				y: {
+					stacked: true
+				}
+			}
+		};
+	}
+
+	buildViewPatrimonio(monthlyDataFiltered: DataFull[]) {
+
+		if (this.chartPlugins.includes(ChartDataLabels)) {
+			this.chartPlugins.splice(this.chartPlugins.indexOf(ChartDataLabels), 1);
+		}
+
+		if (this.aggregatorOptionsSelected == "Ano") {
 
 			this.chartType = "bar";
-
-			if (!this.chartPlugins.includes(ChartDataLabels)) {
-				this.chartPlugins.push(ChartDataLabels);
-			}
+			this.chartHeight = 75 + (20 * monthlyDataFiltered.length) + "px";
 
 			this.chartData = {
-				labels: filteredData
-					.map(element => element.monthlyReferenceDate)
-					.map(element => format(element, 'MMM/yyyy', { locale: ptBR })),
-				datasets: ["capitalGain", "charges"].map(serie => {
+				labels: monthlyDataFiltered
+					.map(element => element.referenceDate)
+					.map(element => format(element, this.aggregatorOptionsSelected == "Ano" ? "yyyy" : "MMM/yyyy", { locale: ptBR })),
+				datasets: ["valueApplied", "finalEquity"].map(serie => {
 
 					const result: ChartDataset = {
-						type: 'bar',
+						type: "bar",
 						label: "",
-						data: [],
+						data: monthlyDataFiltered.map(element => element[serie as keyof DataFull]) as number[],
 						borderWidth: 1,
 						borderColor: "",
 						backgroundColor: "",
-						hidden: serie === "charges",
 						datalabels: {
 							align: "start",
 							font: {
@@ -610,44 +1042,47 @@ export class RentabilidadeComponent implements OnInit {
 						}
 					};
 
-					if (serie === "capitalGain") {
-						result.label = "Ganho de Capital";
-						result.data = filteredData.map(element => element.capitalGain);
-						result.borderColor = (ctx) => ctx.raw as number < 0 ? '#e67c73' : '#26A69A';
-						result.backgroundColor = (ctx) => ctx.raw as number < 0 ? '#e67c73' : '#26A69A';
-						result.datalabels!.align = "start";
+					switch (serie) {
+						case "valueApplied":
+							result.label = "Valor Investido";
+							result.borderColor = "#2196F3";
+							result.backgroundColor = "#2196F3";
+							result.datalabels!.align = "start";
+							break;
 
-					} else if (serie === "charges") {
-						result.label = "Encargos";
-						result.data = filteredData.map(element => element.charges);
-						result.borderColor = '#FFEB3B';
-						result.backgroundColor = '#FFEB3B';
-						result.datalabels!.align = "end";
+						case "finalEquity":
+							result.label = "Saldo Bruto";
+							result.borderColor = "#673AB7";
+							result.backgroundColor = "#673AB7";
+							result.datalabels!.align = "end";
+							break;
 					}
 
 					return result;
 				})
-			}
+			};
 
 			this.chartOptions = {
 				locale: "pt-BR",
-				indexAxis: 'y',
+				indexAxis: "y",
 				interaction: {
-					mode: 'index',
-					axis: 'y'
+					mode: "index",
+					axis: "y"
 				},
 				responsive: true,
-				maintainAspectRatio: true,
-				aspectRatio: 1.5,
+				// maintainAspectRatio: true,
+				// aspectRatio: 1.5,
+				maintainAspectRatio: false,
+				aspectRatio: 1,
 				plugins: {
 					tooltip: {
-						mode: 'index',
+						mode: "index",
 						intersect: false,
 						callbacks: {
 							label: (context) => {
-								const label = context.dataset.label || '';
+								const label = context.dataset.label || "";
 								const value = context.parsed.x || 0;
-								return `${label}: ${this.currencyPipe.transform(value, 'BRL', 'symbol', '1.2-2')}`;
+								return `${label}: ${this.currencyPipe.transform(value, "BRL", "symbol", "1.2-2")}`;
 							}
 						}
 					},
@@ -658,16 +1093,17 @@ export class RentabilidadeComponent implements OnInit {
 						anchor: "end",
 						display: true,
 						formatter: (value, context) => {
-							return `${this.currencyPipe.transform(value, 'BRL', 'symbol', '1.2-2')}`;
+							return `${this.currencyPipe.transform(value, "BRL", "symbol", "1.2-2")}`;
 						}
 					}
 				},
 				scales: {
 					x: {
-						stacked: true,
+						stacked: false,
+						beginAtZero: true,
 						ticks: {
 							callback: (value, index, ticks) => {
-								return `${this.currencyPipe.transform(value, 'BRL', 'symbol', '1.2-2')}`;
+								return `${this.currencyPipe.transform(value, "BRL", "symbol", "1.2-2")}`;
 							},
 						}
 					},
@@ -677,108 +1113,22 @@ export class RentabilidadeComponent implements OnInit {
 				}
 			};
 
-		} else if (this.dataAnalysisTypesSelected === "Movimentação") {
-
-			if (!this.chartPlugins.includes(ChartDataLabels)) {
-				this.chartPlugins.push(ChartDataLabels);
-			}
-
-			this.chartType = "bar";
-
-			this.chartData = {
-				labels: filteredData
-					.map(element => element.monthlyReferenceDate)
-					.map(element => format(element, 'MMM/yyyy', { locale: ptBR })),
-				datasets: ["movementations"].map(serie => {
-
-					const result: ChartDataset = {
-						type: 'bar',
-						label: "Movimentações",
-						data: filteredData.map(element => element.movementations),
-						borderWidth: 1,
-						borderColor: (ctx) => ctx.raw as number < 0 ? '#e67c73' : '#26A69A',
-						backgroundColor: (ctx) => ctx.raw as number < 0 ? '#e67c73' : '#26A69A',
-						datalabels: {
-							align: "start",
-							font: {
-								family: "Montserrat",
-								weight: 700,
-								size: 10
-							}
-						}
-					};
-
-					return result;
-				})
-			}
-
-			this.chartOptions = {
-				locale: "pt-BR",
-				indexAxis: 'y',
-				interaction: {
-					mode: 'index',
-					axis: 'y'
-				},
-				responsive: true,
-				maintainAspectRatio: true,
-				aspectRatio: 1.5,
-				plugins: {
-					tooltip: {
-						mode: 'index',
-						intersect: false,
-						callbacks: {
-							label: (context) => {
-								const label = context.dataset.label || '';
-								const value = context.parsed.x || 0;
-								return `${label}: ${this.currencyPipe.transform(value, 'BRL', 'symbol', '1.2-2')}`;
-							}
-						}
-					},
-					legend: {
-						position: "top"
-					},
-					datalabels: {
-						anchor: "end",
-						display: true,
-						formatter: (value, context) => {
-							return `${this.currencyPipe.transform(value, 'BRL', 'symbol', '1.2-2')}`;
-						}
-					}
-				},
-				scales: {
-					x: {
-						stacked: true,
-						ticks: {
-							callback: (value, index, ticks) => {
-								return `${this.currencyPipe.transform(value, 'BRL', 'symbol', '1.2-2')}`;
-							},
-						}
-					},
-					y: {
-						stacked: true
-					}
-				}
-			};
-
-		} else if (this.dataAnalysisTypesSelected === "Patrimônio") {
-
-			if (this.chartPlugins.includes(ChartDataLabels)) {
-				this.chartPlugins.splice(this.chartPlugins.indexOf(ChartDataLabels), 1);
-			}
+		} else {
 
 			this.chartType = "line";
+			this.chartHeight = window.innerWidth < window.innerHeight ? "50%" : "100%";
 
 			this.chartData = {
-				labels: filteredData
-					.map(element => element.monthlyReferenceDate)
-					.map(element => format(element, 'MMM/yyyy', { locale: ptBR }))
+				labels: monthlyDataFiltered
+					.map(element => element.referenceDate)
+					.map(element => format(element, this.aggregatorOptionsSelected == "Ano" ? "yyyy" : "MMM/yyyy", { locale: ptBR }))
 					.reverse(),
 				datasets: ["valueApplied", "finalEquity"].map(serie => {
 
 					const result: ChartDataset = {
-						type: 'line',
+						type: "line",
 						label: "",
-						data: [],
+						data: monthlyDataFiltered.map(element => element[serie as keyof DataFull]).reverse() as number[],
 						borderWidth: 1,
 						borderColor: "",
 						backgroundColor: "",
@@ -786,42 +1136,45 @@ export class RentabilidadeComponent implements OnInit {
 						pointStyle: false
 					};
 
-					if (serie === "valueApplied") {
-						result.label = "Valor Investido";
-						result.data = filteredData.map(element => element.valueApplied).reverse();
-						result.borderColor = "#2196F3";
-						result.backgroundColor = "#2196F3";
+					switch (serie) {
+						case "valueApplied":
+							result.label = "Valor Investido";
+							result.borderColor = "#2196F3";
+							result.backgroundColor = "#2196F3";
+							break;
 
-					} else if (serie === "finalEquity") {
-						result.label = "Saldo Bruto";
-						result.data = filteredData.map(element => element.finalEquity).reverse();
-						result.borderColor = '#673AB7';
-						result.backgroundColor = '#673AB7';
+						case "finalEquity":
+							result.label = "Saldo Bruto";
+							result.borderColor = "#673AB7";
+							result.backgroundColor = "#673AB7";
+							break;
 					}
 
 					return result;
 				})
-			}
+			};
 
 			this.chartOptions = {
 				locale: "pt-BR",
-				indexAxis: 'x',
+				indexAxis: "x",
 				interaction: {
-					mode: 'index',
-					axis: 'x'
+					mode: "index",
+					axis: "x"
 				},
 				responsive: true,
-				maintainAspectRatio: true,
-				aspectRatio: 2.0,
+				// maintainAspectRatio: true,
+				// aspectRatio: 2.0,
+				maintainAspectRatio: false,
+				aspectRatio: 1,
 				plugins: {
 					tooltip: {
-						mode: 'index',
+						mode: "index",
 						intersect: false,
 						callbacks: {
 							label: (context) => {
-								const label = context.dataset.label || '';
+								const label = context.dataset.label || "";
 								const value = context.parsed.y || 0;
-								return `${label}: ${this.currencyPipe.transform(value, 'BRL', 'symbol', '1.2-2')}`;
+								return `${label}: ${this.currencyPipe.transform(value, "BRL", "symbol", "1.2-2")}`;
 							}
 						}
 					},
@@ -834,13 +1187,16 @@ export class RentabilidadeComponent implements OnInit {
 					y: {
 						ticks: {
 							callback: (value, index, ticks) => {
-								return `${this.currencyPipe.transform(value, 'BRL', 'symbol', '1.2-2')}`;
+								return `${this.currencyPipe.transform(value, "BRL", "symbol", "1.2-2")}`;
 							},
 						}
 					}
 				}
 			};
-
 		}
+	}
+
+	buildViewDistribuicao(monthlyDataFiltered: DataFull[]) {
+
 	}
 }

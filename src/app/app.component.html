@@ -1,13 +1,22 @@
 <p-toast></p-toast>
 
 <div class="flex flex-col h-full">
-
-	<div class="flex-none" *ngIf="hasLogin">
+	<div
+		class="flex-none"
+		*ngIf="hasLogin"
+	>
 		<div class="card">
 			<p-menubar [model]="items">
-				<ng-template pTemplate="item" let-item>
+				<ng-template
+					pTemplate="item"
+					let-item
+				>
 					<ng-container>
-						<a [routerLink]="item.routerLink" class="p-menuitem-link" routerLinkActive="router-active">
+						<a
+							[routerLink]="item.routerLink"
+							class="p-menuitem-link"
+							routerLinkActive="router-active"
+						>
 							<span class="material-symbols-outlined">
 								{{ item.icon }}
 							</span>

@@ -2,7 +2,7 @@ import { CommonModule } from "@angular/common";
 import { Component, OnDestroy, OnInit } from "@angular/core";
 import { RouterModule, RouterOutlet } from "@angular/router";
 import { MenuItem } from "primeng/api";
-import { MenubarModule } from 'primeng/menubar';
+import { MenubarModule } from "primeng/menubar";
 import { ToastModule } from "primeng/toast";
 import { Subscription } from "rxjs/internal/Subscription";
 import { CacheService, KINVO_KEYS } from "./services/cache.service";
@@ -47,21 +47,27 @@ export class AppComponent implements OnInit, OnDestroy {
 	ngOnInit() {
 		this.items = [
 			{
-				label: "Rentabilidade",
-				icon: "finance",
-				routerLink: "/rentabilidade",
-				routerLinkActiveOptions: { exact: true }
-			},
-			{
-				label: "Distribuição",
-				icon: "donut_large",
-				routerLink: "/distribuicao",
+				label: "Análises",
+				icon: "bar_chart",
+				routerLink: "/analises",
 				routerLinkActiveOptions: { exact: true }
 			},
 			{
 				label: "Ativos",
-				icon: "account_balance",
+				icon: "account_balance_wallet",
 				routerLink: "/ativos",
+				routerLinkActiveOptions: { exact: true }
+			},
+			{
+				label: "Extrato",
+				icon: "receipt",
+				routerLink: "/extrato",
+				routerLinkActiveOptions: { exact: true }
+			},
+			{
+				label: "Sincronização",
+				icon: "sync_alt",
+				routerLink: "/sincronizacao",
 				routerLinkActiveOptions: { exact: true }
 			},
 			{

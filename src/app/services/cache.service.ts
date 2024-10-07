@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Injectable } from "@angular/core";
 import { BehaviorSubject, Observable, of } from "rxjs";
 
@@ -5,7 +6,7 @@ export const KINVO_KEYS = {
 	TOKEN: "kinvoToken",
 	USER: "kinvoUser",
 	PASSWORD: "kinvoPassword"
-}
+};
 
 export interface CacheChangeEvent<T = unknown> {
 	key: string;

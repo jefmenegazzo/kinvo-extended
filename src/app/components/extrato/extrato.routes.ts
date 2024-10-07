@@ -1,9 +1,9 @@
 import type { Route } from "@angular/router";
-import { DistribuicaoComponent } from "./distribuicao.component";
+import { ExtratoComponent } from "./extrato.component";
 
 export const remoteRoutes: Route[] = [
 	{
 		path: "",
-		component: DistribuicaoComponent,
+		component: ExtratoComponent,
 	},
 ];

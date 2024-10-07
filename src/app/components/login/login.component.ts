@@ -3,9 +3,9 @@ import { Component, OnInit } from "@angular/core";
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from "@angular/forms";
 import { Router, RouterModule } from "@angular/router";
 import { ButtonModule } from "primeng/button";
-import { CheckboxModule } from 'primeng/checkbox';
+import { CheckboxModule } from "primeng/checkbox";
 import { InputTextModule } from "primeng/inputtext";
-import { PasswordModule } from 'primeng/password';
+import { PasswordModule } from "primeng/password";
 import { finalize } from "rxjs/internal/operators/finalize";
 import { KinvoApiResponse } from "../../dtos/kinvo-api-response";
 import { KinvoLogin } from "../../dtos/kinvo-login";
@@ -32,8 +32,7 @@ interface StoragePayload {
 		CheckboxModule
 	],
 	templateUrl: "./login.component.html",
-	styleUrl: "./login.component.scss",
-	// changeDetection: ChangeDetectionStrategy.OnPush,
+	styleUrl: "./login.component.scss"
 })
 export class LoginComponent implements OnInit {
 
@@ -56,7 +55,7 @@ export class LoginComponent implements OnInit {
 			remember: [true]
 		});
 
-		// eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		this.loadStorage().then(() => { }).catch((error) => { });
 	}
 
@@ -111,7 +110,7 @@ export class LoginComponent implements OnInit {
 							await this.sessionService.encryptAndStoreData(key, data);
 						}
 
-						await this.router.navigate(["rentabilidade"]);
+						await this.router.navigate(["analises"]);
 					}
 				}
 			});

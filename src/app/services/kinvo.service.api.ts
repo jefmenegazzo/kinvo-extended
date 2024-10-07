@@ -1,5 +1,5 @@
 import { HttpClient } from "@angular/common/http";
-import { Injectable } from "@angular/core";
+import { Injectable, isDevMode } from "@angular/core";
 import { tap } from "rxjs/internal/operators/tap";
 import { KinvoApiResponse } from "../dtos/kinvo-api-response";
 import { KinvoCapitalGain } from "../dtos/kinvo-capital-gain";
@@ -16,7 +16,9 @@ import { CacheService } from "./cache.service";
 })
 export class KinvoServiceApi {
 
-	url_base = "kinvo/";
+	urlBase = isDevMode()
+		? "kinvo/"
+		: "https://kinvo-extended-proxy.jef-menegazzo.workers.dev/";
 
 	constructor(
 		private http: HttpClient,
@@ -25,23 +27,23 @@ export class KinvoServiceApi {
 
 	public login(user: string, password: string) {
 
-		const json_data = {
+		const jsonData = {
 			email: user,
 			password: password,
 		};
 
 		return this.http.post<KinvoApiResponse<KinvoLogin>>
-			(`${this.url_base}v4/auth/login`, json_data) // 'v3/auth/login'
+			(`${this.urlBase}v4/auth/login`, jsonData); // 'v3/auth/login'
 	}
 
 	public refreshToken(refreshToken: string) {
 
-		const json_data = {
+		const jsonData = {
 			refreshToken: refreshToken
 		};
 
 		return this.http.post<KinvoApiResponse<KinvoLogin>>
-			(`${this.url_base}auth/sessions/refresh-token`, json_data)
+			(`${this.urlBase}auth/sessions/refresh-token`, jsonData);
 	}
 
 	public getPortfolios() {
@@ -53,7 +55,7 @@ export class KinvoServiceApi {
 		}
 
 		return this.http.get<KinvoApiResponse<KinvoPortfolio[]>>
-			(`${this.url_base}portfolio-command/portfolio/getPortfolios`)
+			(`${this.urlBase}portfolio-command/portfolio/getPortfolios`)
 			.pipe(
 				tap(response => {
 					if (response.success) {
@@ -72,7 +74,7 @@ export class KinvoServiceApi {
 		}
 
 		return this.http.get<KinvoApiResponse<KinvoPortfolioProfitability>>
-			(`${this.url_base}portfolio-query/PortfolioAnalysis/GetPeriodicPortfolioProfitability/${id}/${period}`)
+			(`${this.urlBase}portfolio-query/PortfolioAnalysis/GetPeriodicPortfolioProfitability/${id}/${period}`)
 			.pipe(
 				tap(response => {
 					if (response.success) {
@@ -91,7 +93,7 @@ export class KinvoServiceApi {
 		}
 
 		return this.http.get<KinvoApiResponse<KinvoCapitalGain>>
-			(`${this.url_base}capital-gain/by-portfolio/${id}`)
+			(`${this.urlBase}capital-gain/by-portfolio/${id}`)
 			.pipe(
 				tap(response => {
 					if (response.success) {
@@ -110,7 +112,7 @@ export class KinvoServiceApi {
 		}
 
 		return this.http.get<KinvoApiResponse<KinvoPortfolioGoalStatus>>
-			(`${this.url_base}simpleEquityGoal/getPortfolioGoalStatus/${id}`)
+			(`${this.urlBase}simpleEquityGoal/getPortfolioGoalStatus/${id}`)
 			.pipe(
 				tap(response => {
 					if (response.success) {
@@ -129,7 +131,7 @@ export class KinvoServiceApi {
 		}
 
 		return this.http.get<KinvoApiResponse<KinvoPortfolioProduct[]>>
-			(`${this.url_base}portfolio-command/portfolioProduct/GetByPortfolio/${id}`)
+			(`${this.urlBase}portfolio-command/portfolioProduct/GetByPortfolio/${id}`)
 			.pipe(
 				tap(response => {
 					if (response.success) {
@@ -148,7 +150,7 @@ export class KinvoServiceApi {
 		}
 
 		return this.http.get<KinvoApiResponse<KinvoPortfolioProductStatement[]>>
-			(`${this.url_base}portfolio-query/Statement/getProductStatement/${id}`)
+			(`${this.urlBase}portfolio-query/Statement/getProductStatement/${id}`)
 			.pipe(
 				tap(response => {
 					if (response.success) {

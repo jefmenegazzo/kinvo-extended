@@ -1,6 +1,6 @@
 .data-panel {
 	height: calc(100vh - 129px);
-    max-height: calc(100vh - 129px);
+	max-height: calc(100vh - 129px);
 }
 
 @media screen and (max-width: 768px) {
@@ -10,13 +10,16 @@
 	}
 }
 
-th, td {
-	white-space:nowrap;
+th,
+td {
+	white-space: nowrap;
 	border-width: 0.25px;
-    border-style: solid;
-    border-color: #e5e7eb;
+	border-style: solid;
+	border-color: #e5e7eb;
 }
 
 :host ::ng-deep {
-	.p-datatable table { border-collapse: separate; }
+	.p-datatable table {
+		border-collapse: separate;
+	}
 }
