@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1728317780542,
+  "timestamp": 1728346077492,
   "index": "./index.html",
   "assetGroups": [
     {
@@ -13,10 +13,10 @@
       "urls": [
         "./chunk-4JMCAVKY.js",
         "./chunk-4YRY4IP2.js",
-        "./chunk-65YQ4GKX.js",
         "./chunk-6YXWB3FT.js",
         "./chunk-7246HQZJ.js",
         "./chunk-A6KY3WA2.js",
+        "./chunk-AD4NFYK5.js",
         "./chunk-ANQPK4KT.js",
         "./chunk-BAJR73U4.js",
         "./chunk-DQSKJLJO.js",
@@ -26,7 +26,7 @@
         "./chunk-VPPULL3P.js",
         "./favicon.ico",
         "./index.html",
-        "./main-N5JYEKBS.js",
+        "./main-DSMAUT4Q.js",
         "./manifest.webmanifest",
         "./polyfills-H2K4KJRD.js",
         "./styles-L7BNLYA3.css"
@@ -68,10 +68,10 @@
   "hashTable": {
     "./chunk-4JMCAVKY.js": "196b4fadb556f33f56f5300024fceb713f1f1312",
     "./chunk-4YRY4IP2.js": "0edff1528b9c9c28549f3f98eb43e7d5b3da3d92",
-    "./chunk-65YQ4GKX.js": "14d1dd9fd570f8dc4b5dc440979d43dae17d10ac",
     "./chunk-6YXWB3FT.js": "c74c496df273e81d3002712d173e92b4ea68db3d",
     "./chunk-7246HQZJ.js": "470dbaaeba689e7c10d98218793d15c6377fcca7",
     "./chunk-A6KY3WA2.js": "6cd89d3ad9c87e30dfe385c3331bfb77165581f0",
+    "./chunk-AD4NFYK5.js": "b6401a1e64fc3125152e1f4dd038be3d24791f0d",
     "./chunk-ANQPK4KT.js": "f4c74fd90009ffef2f9380c7821e348390ec5e17",
     "./chunk-BAJR73U4.js": "a0f7a18b07c09e75598701cc7e6c23f645dd96ac",
     "./chunk-DQSKJLJO.js": "bb85a51d9c09b5ce3634bc38a8c3db419baa995c",
@@ -88,10 +88,10 @@
     "./icons/icon-512x512.png": "749f10596905de469967e9990527fb57d37b4749",
     "./icons/icon-72x72.png": "dbaec3e682ebe982970e2869182921d650785834",
     "./icons/icon-96x96.png": "65be5077af2ae07f72cd85e92c129c56dab6382e",
-    "./index.html": "ed5cf7af5acb1df97577f7914c584ac50a654daa",
+    "./index.html": "c798d105d40b7841b36038af702af742813ced92",
     "./kinvo-extended-logo.svg": "ba0ee2c4ebe499596fe722935bcd6eac02876e5f",
     "./logo.svg": "e22e8155d30c89354d7ec86ff3c101d36047e6bc",
-    "./main-N5JYEKBS.js": "a9d9af9a14038201bb2f3a72fcd13f1b9fd38005",
+    "./main-DSMAUT4Q.js": "db5c6fc15a1c349110ac1046f6cf6e2b49dab03d",
     "./manifest.webmanifest": "7cd1e27f1b0fc246c6483240b591a44d1d0e39cb",
     "./media/Inter-italic.var-SWFAXF2C.woff2": "6f20a046917bf86d4b6cc29c4e2515bd64d2cb9b",
     "./media/Inter-roman.var-WIJJYAE4.woff2": "7a2602d2ebb08ce895e33addb6fe595f1029431e",
