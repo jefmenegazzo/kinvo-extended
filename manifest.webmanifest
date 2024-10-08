@@ -3,7 +3,7 @@
 	"short_name": "Kinvo Extended",
 	"theme_color": "#1976d2",
 	"background_color": "#ffffff",
-	"display": "fullscreen",
+	"display": "standalone",
 	"scope": "./",
 	"start_url": "./",
 	"icons": [
