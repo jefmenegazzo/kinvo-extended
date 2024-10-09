@@ -3,6 +3,7 @@ import { Injectable, isDevMode } from "@angular/core";
 import { tap } from "rxjs/internal/operators/tap";
 import { KinvoApiResponse } from "../dtos/kinvo-api-response";
 import { KinvoCapitalGain } from "../dtos/kinvo-capital-gain";
+import { KinvoConsolidationPortfolioAsset } from "../dtos/kinvo-consolidation-portfolio-asset";
 import { KinvoLogin } from "../dtos/kinvo-login";
 import { KinvoPortfolio } from "../dtos/kinvo-portfolio";
 import { KinvoPortfolioGoalStatus } from "../dtos/kinvo-portfolio-goal-status";
@@ -151,6 +152,25 @@ export class KinvoServiceApi {
 
 		return this.http.get<KinvoApiResponse<KinvoPortfolioProductStatement[]>>
 			(`${this.urlBase}portfolio-query/Statement/getProductStatement/${id}`)
+			.pipe(
+				tap(response => {
+					if (response.success) {
+						this.cacheService.set(key, response);
+					}
+				})
+			);
+	}
+
+	public getConsolidationPortfolioAssets(id: number) {
+
+		const key = `getConsolidationPortfolioAssets-${id}`;
+
+		if (this.cacheService.get(key)) {
+			return this.cacheService.getObservable<KinvoApiResponse<KinvoConsolidationPortfolioAsset[]>>(key);
+		}
+
+		return this.http.get<KinvoApiResponse<KinvoConsolidationPortfolioAsset[]>>
+			(`${this.urlBase}v2/consolidation/portfolios/${id}/assets`)
 			.pipe(
 				tap(response => {
 					if (response.success) {

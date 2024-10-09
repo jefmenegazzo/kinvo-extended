@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { CommonModule, CurrencyPipe, PercentPipe } from "@angular/common";
@@ -17,9 +18,11 @@ import { TableModule } from "primeng/table";
 import { finalize, forkJoin, tap } from "rxjs";
 import { KinvoApiResponse } from "../../dtos/kinvo-api-response";
 import { KinvoCapitalGain } from "../../dtos/kinvo-capital-gain";
+import { KinvoConsolidationPortfolioAsset } from "../../dtos/kinvo-consolidation-portfolio-asset";
 import { KinvoPortfolio } from "../../dtos/kinvo-portfolio";
 import { KinvoPortfolioProduct } from "../../dtos/kinvo-portfolio-product";
 import { KinvoPortfolioProfitability } from "../../dtos/kinvo-portfolio-profitability";
+import { DataConsolidateAsset } from "../../models/data-consolidate-asset";
 import { aggregationKeysFirst, aggregationKeysJurosCompostos, aggregationKeysLast, aggregationKeysPercentRelative, aggregationKeysSum, DataFull } from "../../models/data-full";
 import { DataProfitability } from "../../models/data-profitability";
 import { KinvoServiceApi } from "../../services/kinvo.service.api";
@@ -77,6 +80,7 @@ export class RentabilidadeComponent implements OnInit {
 
 	monthlyDataFull: DataFull[] = []; // Mensal
 	dailyDataProfitability!: DataProfitability[]; // Diário
+	consolidatedAssets: DataConsolidateAsset[] = []; // Tudo
 
 	dataFullLoading: boolean = false;
 
@@ -244,12 +248,13 @@ export class RentabilidadeComponent implements OnInit {
 		forkJoin([
 			this.kinvoServiceApi.getCapitalGainByPortfolio(this.portfolioDataSelected),
 			this.kinvoServiceApi.getPeriodicPortfolioProfitability(this.portfolioDataSelected),
-			this.kinvoServiceApi.getPortfolioProductByPortfolio(this.portfolioDataSelected)
+			this.kinvoServiceApi.getPortfolioProductByPortfolio(this.portfolioDataSelected),
+			this.kinvoServiceApi.getConsolidationPortfolioAssets(this.portfolioDataSelected)
 		]).pipe(
 			finalize(() => {
 				// this.dataFullLoading = false;
 			})
-		).subscribe(([capitalGain, profitability, products]) => {
+		).subscribe(([capitalGain, profitability, products, consolidateAssets]) => {
 
 			// this.dataFullLoading = true;
 
@@ -268,8 +273,8 @@ export class RentabilidadeComponent implements OnInit {
 				})
 			).subscribe(() => {
 
-				if (capitalGain.success && profitability.success && products.success) {
-					this.mergeDataFull(capitalGain, profitability, products);
+				if (capitalGain.success && profitability.success && products.success && consolidateAssets.success) {
+					this.mergeDataFull(capitalGain, profitability, products, consolidateAssets);
 					this.onDataIntervalChange();
 				}
 			});
@@ -309,7 +314,7 @@ export class RentabilidadeComponent implements OnInit {
 		return value < 0 || total <= 0 ? undefined : value / total;
 	}
 
-	mergeDataFull(capitalGain: KinvoApiResponse<KinvoCapitalGain>, profitability: KinvoApiResponse<KinvoPortfolioProfitability>, products: KinvoApiResponse<KinvoPortfolioProduct[]>) {
+	mergeDataFull(capitalGain: KinvoApiResponse<KinvoCapitalGain>, profitability: KinvoApiResponse<KinvoPortfolioProfitability>, products: KinvoApiResponse<KinvoPortfolioProduct[]>, consolidateAssets: KinvoApiResponse<KinvoConsolidationPortfolioAsset[]>) {
 
 		let dataAggregatedByMonth: Record<string, DataFull> = {};
 
@@ -322,10 +327,10 @@ export class RentabilidadeComponent implements OnInit {
 			const tableRow = dataAggregatedByMonth[element.monthlyReferenceDate];
 			tableRow.valueApplied += element.valueApplied;
 			tableRow.initialEquity += element.initialEquity;
-			tableRow.applications += element.applications;
-			tableRow.redemptions += element.redemptions;
+			// tableRow.applications += element.applications;
+			// tableRow.redemptions += element.redemptions;
 			tableRow.returns += element.returns;
-			tableRow.proceeds += element.proceeds;
+			// tableRow.proceeds += element.proceeds;
 			tableRow.capitalGain += element.capitalGain;
 			tableRow.finalEquity += element.finalEquity;
 		}
@@ -439,6 +444,39 @@ export class RentabilidadeComponent implements OnInit {
 				poupanca: profitabilityPoupanca[i]
 			});
 		}
+
+		const mapProductTypeIdToProductTypeName: Record<number, string> = {
+			1: "Fundo",
+			2: "Previdência",
+			3: "Renda Fixa Pós-Fixada",
+			4: "Tesouro Direto",
+			5: "Poupança",
+			6: "Renda Fixa Pré-Fixada",
+			7: "Criptomoeda",
+			8: "Ação",
+			9: "Debênture",
+			10: "Moeda",
+			11: "FII",
+			12: "BDR",
+			14: "Conta Corrente",
+			15: "COE",
+			97: "Produto de Posição",
+			98: "Renda Fixa Customizada",
+			99: "Produto Personalizado"
+		};
+
+		this.consolidatedAssets = consolidateAssets.data.map(element => ({
+			productId: element.productId,
+			productName: element.productName,
+			equity: element.equity,
+			productTypeId: element.productTypeId,
+			productTypeName: mapProductTypeIdToProductTypeName[element.productTypeId],
+			financialInstitutionId: element.financialInstitutionId,
+			financialInstitutionName: element.financialInstitutionName,
+			strategyOfDiversificationId: element.strategyOfDiversificationId,
+			strategyOfDiversificationDescription: element.strategyOfDiversificationDescription,
+			portfolioPercentage: element.portfolioPercentage
+		}));
 	}
 
 	downloadTableCSV() {
@@ -542,7 +580,7 @@ export class RentabilidadeComponent implements OnInit {
 
 		for (let i = dataProfitabilityByDay.length - 1; i > 0; i--) {
 			for (const field of fields) {
-				dataProfitabilityByDay[i][field] = (dataProfitabilityByDay[i][field] + 1) / (dataProfitabilityByDay[i - 1][field] + 1) - 1;
+				dataProfitabilityByDay[i][field] = (1 + dataProfitabilityByDay[i][field]) / (1 + dataProfitabilityByDay[i - 1][field]) - 1;
 			}
 		}
 
@@ -570,9 +608,9 @@ export class RentabilidadeComponent implements OnInit {
 		});
 	}
 
-	aggregateDataByAggregator<T extends DataFull>(data: T[], aggregator: DataAggregator): T[] {
+	aggregateDataByAggregator(data: DataFull[], aggregator: DataAggregator) {
 
-		const dataAggregated: Record<string, T[]> = {};
+		const dataAggregated: Record<string, DataFull[]> = {};
 		let dateFormat: string = "dd/MM/yyyy";
 		data.sort((a, b) => a.referenceDate.getTime() - b.referenceDate.getTime());
 
@@ -621,7 +659,49 @@ export class RentabilidadeComponent implements OnInit {
 		});
 
 		dataFiltered.sort((a, b) => b.referenceDate.getTime() - a.referenceDate.getTime());
-		return dataFiltered as T[];
+		return dataFiltered;
+	}
+
+	groupAssetsByAggregator(assets: DataConsolidateAsset[], aggregator: DataAggregator) {
+
+		const assetsGrouped: Record<number, Partial<DataConsolidateAsset>> = {};
+
+		for (const element of assets) {
+
+			let key: number;
+			const obj: Partial<DataConsolidateAsset> = { equity: 0 };
+
+			switch (aggregator) {
+				case "Estratégia":
+					key = element.strategyOfDiversificationId;
+					obj.strategyOfDiversificationId = element.strategyOfDiversificationId;
+					obj.strategyOfDiversificationDescription = element.strategyOfDiversificationDescription;
+					break;
+
+				case "Classe":
+					key = element.productTypeId;
+					obj.productTypeId = element.productTypeId;
+					obj.productTypeName = element.productTypeName;
+					break;
+
+				case "Instituição":
+					key = element.financialInstitutionId;
+					obj.financialInstitutionId = element.financialInstitutionId;
+					obj.financialInstitutionName = element.financialInstitutionName;
+					break;
+
+				default:
+					continue;
+			}
+
+			if (!assetsGrouped[key]) {
+				assetsGrouped[key] = obj;
+			}
+
+			assetsGrouped[key].equity! += element.equity;
+		}
+
+		return Object.values(assetsGrouped).filter(element => (element?.equity || 0) > 0);
 	}
 
 	applyDataFilters() {
@@ -639,17 +719,25 @@ export class RentabilidadeComponent implements OnInit {
 
 		// Filtro de Data e Agregação de Datos
 
-		const monthlyDataFiltered = this.aggregateDataByAggregator(
-			this.filterDataByDateRange(this.monthlyDataFull), this.aggregatorOptionsSelected!
-		);
+		const monthlyDataFiltered = this.dataAnalysisTypesSelected != this.dataAnalysisTypes[5]
+			? this.aggregateDataByAggregator(
+				this.filterDataByDateRange(this.monthlyDataFull), this.aggregatorOptionsSelected!
+			)
+			: [];
 
-		const dailyDataProfitabilityFiltered = this.adicionarCapitalizacaoComposta(
-			this.filterDataByDateRange(
-				this.removerCapitalizacaoComposta(
-					this.dailyDataProfitability.map(element => ({ ...element }))
+		const dailyDataProfitabilityFiltered = this.dataAnalysisTypesSelected == this.dataAnalysisTypes[1]
+			? this.adicionarCapitalizacaoComposta(
+				this.filterDataByDateRange(
+					this.removerCapitalizacaoComposta(
+						this.dailyDataProfitability.map(element => ({ ...element }))
+					)
 				)
 			)
-		);
+			: [];
+
+		const consolidatedAssetsFiltered = this.dataAnalysisTypesSelected == this.dataAnalysisTypes[5]
+			? this.groupAssetsByAggregator(this.consolidatedAssets, this.aggregatorOptionsSelected!)
+			: [];
 
 		switch (this.dataAnalysisTypesSelected) {
 			case this.dataAnalysisTypes[0]: // "Resumo"
@@ -673,7 +761,7 @@ export class RentabilidadeComponent implements OnInit {
 				break;
 
 			case this.dataAnalysisTypes[5]: // "Distribuição"
-				this.buildViewDistribuicao(monthlyDataFiltered);
+				this.buildViewDistribuicao(consolidatedAssetsFiltered);
 				break;
 		}
 	}
@@ -1303,7 +1391,88 @@ export class RentabilidadeComponent implements OnInit {
 		}
 	}
 
-	buildViewDistribuicao(monthlyDataFiltered: DataFull[]) {
+	buildViewDistribuicao(consolidateAssetsFiltered: Partial<DataConsolidateAsset>[]) {
 
+		this.chartType = "doughnut";
+		this.chartHeight = "50%";
+
+		if (!this.chartPlugins.includes(ChartDataLabels)) {
+			this.chartPlugins.push(ChartDataLabels);
+		}
+
+		this.chartData = {
+			labels: consolidateAssetsFiltered
+				.map(element => element.strategyOfDiversificationDescription || element.productTypeName || element.financialInstitutionName),
+			datasets: [{
+				type: "doughnut",
+				label: "Saldo",
+				data: consolidateAssetsFiltered.map(element => element.equity) as number[],
+				backgroundColor: [
+					"#29B6F6",
+					"#e67c73",
+					"#FFA726",
+					"#FFEE58",
+					"#26A69A"
+				],
+				borderColor: [
+					"#29B6F6",
+					"#e67c73",
+					"#FFA726",
+					"#FFEE58",
+					"#26A69A"
+				],
+				borderWidth: 1,
+				hoverOffset: 4,
+				datalabels: {
+					// align: "start",
+					font: {
+						family: "Montserrat",
+						weight: 700,
+						size: 10
+					}
+				}
+			}]
+		};
+
+		this.chartOptions = {
+			locale: "pt-BR",
+			indexAxis: "x",
+			interaction: {
+				mode: "index",
+				axis: "x"
+			},
+			responsive: true,
+			// maintainAspectRatio: true,
+			// aspectRatio: 2.0,
+			maintainAspectRatio: false,
+			aspectRatio: 1,
+			plugins: {
+				tooltip: {
+					mode: "index",
+					intersect: false,
+					callbacks: {
+						label: (context) => {
+							const total = (context.dataset.data as number[]).reduce((acc: number, value: number) => acc + value, 0);
+							const label = context.dataset.label || "";
+							const value = context.raw as number || 0;
+							const percent = (value / total);
+							return `${label}: ${this.currencyPipe.transform(value, "BRL", "symbol", "1.2-2")} (${this.percentPipe.transform(percent, "1.2-2")})`;
+						}
+					}
+				},
+				legend: {
+					position: "top"
+				},
+				datalabels: {
+					// anchor: "end",
+					display: true,
+					formatter: (value, context) => {
+						const total = (context.dataset.data as number[]).reduce((acc: number, value: number) => acc + value, 0);
+						const percent = (value / total);
+						return `${this.currencyPipe.transform(value, "BRL", "symbol", "1.2-2")} (${this.percentPipe.transform(percent, "1.2-2")})`;
+					}
+				}
+			}
+		};
 	}
 }
