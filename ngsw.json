@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1728482375638,
+  "timestamp": 1728482768752,
   "index": "./index.html",
   "assetGroups": [
     {
@@ -29,7 +29,7 @@
         "./main-WDVC4VSV.js",
         "./manifest.webmanifest",
         "./polyfills-H2K4KJRD.js",
-        "./styles-BRNTPPIY.css"
+        "./styles-7XE4JXIP.css"
       ],
       "patterns": []
     },
@@ -92,7 +92,7 @@
     "./icons/icon-512x512.png": "1f15155c18a3e31c635d594b28b0cc1e4faaddf0",
     "./icons/icon-72x72.png": "07ddd9dd5a0de0bde4098d96734122922eea1cfb",
     "./icons/icon-96x96.png": "d33caede777081a30c101b4d7bc517b08b881821",
-    "./index.html": "07afce788abe8b237d5d1f441a88edcba42f933e",
+    "./index.html": "c91d4abbc0be325496d9e7dda0d6af3894a0258a",
     "./kinvo-extended-logo.svg": "e1fdeb523b73601fe8ca8c29447ab5fd2f489d64",
     "./loader.svg": "300bca53d3d76b155778d7b9f57ba5d7568456da",
     "./logo-original.svg": "e22e8155d30c89354d7ec86ff3c101d36047e6bc",
@@ -109,7 +109,7 @@
     "./media/primeicons-GEFHGEHP.ttf": "3b878ca7e88945a8ec25814810b95367d8977ae6",
     "./media/primeicons-P53SE5CV.woff": "361e3af71bb4e515feead2f787348a92a5527158",
     "./polyfills-H2K4KJRD.js": "1bfa1ba3c7d686159f6bca84c374434862b97814",
-    "./styles-BRNTPPIY.css": "b5b293a54e05bfac693aa9f93bf655b7ac818d82"
+    "./styles-7XE4JXIP.css": "23df18e418422de17b850f7e079ee9bf1bbbb90a"
   },
   "navigationUrls": [
     {
