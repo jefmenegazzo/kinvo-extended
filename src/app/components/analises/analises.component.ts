@@ -50,10 +50,10 @@ type DataAggregator = "Dia" | "Mês" | "Ano" | "Total" | "Estratégia" | "Classe
 		CurrencyPipe,
 		PercentPipe
 	],
-	templateUrl: "./rentabilidade.component.html",
-	styleUrl: "./rentabilidade.component.scss"
+	templateUrl: "./analises.component.html",
+	styleUrl: "./analises.component.scss"
 })
-export class RentabilidadeComponent implements OnInit {
+export class AnalisesComponent implements OnInit {
 
 	portfolioData: KinvoPortfolio[] = [];
 	portfolioDataSelected!: number;
@@ -1394,7 +1394,8 @@ export class RentabilidadeComponent implements OnInit {
 	buildViewDistribuicao(consolidateAssetsFiltered: Partial<DataConsolidateAsset>[]) {
 
 		this.chartType = "doughnut";
-		this.chartHeight = "50%";
+		this.chartHeight = window.innerWidth > window.innerHeight ? (window.innerHeight > 450 ? "450px" : "100%") : "50%";
+
 
 		if (!this.chartPlugins.includes(ChartDataLabels)) {
 			this.chartPlugins.push(ChartDataLabels);

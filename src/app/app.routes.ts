@@ -13,7 +13,7 @@ export const routes: Routes = [
 	},
 	{
 		path: "analises",
-		loadChildren: () => import("./components/rentabilidade/rentabilidade.routes").then((m) => m.remoteRoutes),
+		loadChildren: () => import("./components/analises/analises.routes").then((m) => m.remoteRoutes),
 		canActivate: [loginGuard],
 	},
 	{
@@ -35,6 +35,5 @@ export const routes: Routes = [
 		path: "lista-fundos-investimento",
 		loadChildren: () => import("./components/lista-fundos-investimento/lista-fundos-investimento.routes").then((m) => m.remoteRoutes),
 		canActivate: [loginGuard],
-	},
-
+	}
 ];

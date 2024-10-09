@@ -45,4 +45,12 @@ export class CacheService {
 		this.cache$.next({ key: key, value: null });
 	}
 
+	public clearAll(): void {
+
+		const keys = Array.from(this.cache.keys());
+
+		for (const key of keys) {
+			this.clear(key);
+		}
+	}
 }

@@ -1,12 +1,13 @@
 import { CommonModule } from "@angular/common";
 import { Component, OnDestroy, OnInit } from "@angular/core";
-import { RouterModule, RouterOutlet } from "@angular/router";
+import { Router, RouterModule, RouterOutlet } from "@angular/router";
 import { MenuItem } from "primeng/api";
 import { MenubarModule } from "primeng/menubar";
 import { ToastModule } from "primeng/toast";
 import { Subscription } from "rxjs/internal/Subscription";
 import { CacheService, KINVO_KEYS } from "./services/cache.service";
 import { KinvoServiceApi } from "./services/kinvo.service.api";
+import { SessionService } from "./services/session.service";
 
 @Component({
 	selector: "app-root",
@@ -31,7 +32,9 @@ export class AppComponent implements OnInit, OnDestroy {
 	subscriptions: Subscription[] = [];
 
 	constructor(
-		private cacheService: CacheService
+		private cacheService: CacheService,
+		private sessionService: SessionService,
+		private router: Router,
 	) {
 
 		const subscription = this.cacheService.cache$.subscribe((event) => {
@@ -75,11 +78,18 @@ export class AppComponent implements OnInit, OnDestroy {
 				icon: "list_alt",
 				routerLink: "/lista-fundos-investimento",
 				routerLinkActiveOptions: { exact: true }
-			},
+			}
 		];
 	}
 
 	ngOnDestroy() {
 		this.subscriptions.forEach((subscription) => subscription.unsubscribe);
+	}
+
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	async logout(event: MouseEvent | KeyboardEvent) {
+		await this.sessionService.clearEncryptedDataFromStorage();
+		this.cacheService.clearAll();
+		await this.router.navigate(["login"]);
 	}
 }

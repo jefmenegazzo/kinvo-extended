@@ -1,5 +1,6 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable, isDevMode } from "@angular/core";
+import { retry } from "rxjs/internal/operators/retry";
 import { tap } from "rxjs/internal/operators/tap";
 import { KinvoApiResponse } from "../dtos/kinvo-api-response";
 import { KinvoCapitalGain } from "../dtos/kinvo-capital-gain";
@@ -58,6 +59,7 @@ export class KinvoServiceApi {
 		return this.http.get<KinvoApiResponse<KinvoPortfolio[]>>
 			(`${this.urlBase}portfolio-command/portfolio/getPortfolios`)
 			.pipe(
+				retry(3),
 				tap(response => {
 					if (response.success) {
 						this.cacheService.set(key, response);
@@ -77,6 +79,7 @@ export class KinvoServiceApi {
 		return this.http.get<KinvoApiResponse<KinvoPortfolioProfitability>>
 			(`${this.urlBase}portfolio-query/PortfolioAnalysis/GetPeriodicPortfolioProfitability/${id}/${period}`)
 			.pipe(
+				retry(3),
 				tap(response => {
 					if (response.success) {
 						this.cacheService.set(key, response);
@@ -96,6 +99,7 @@ export class KinvoServiceApi {
 		return this.http.get<KinvoApiResponse<KinvoCapitalGain>>
 			(`${this.urlBase}capital-gain/by-portfolio/${id}`)
 			.pipe(
+				retry(3),
 				tap(response => {
 					if (response.success) {
 						this.cacheService.set(key, response);
@@ -115,6 +119,7 @@ export class KinvoServiceApi {
 		return this.http.get<KinvoApiResponse<KinvoPortfolioGoalStatus>>
 			(`${this.urlBase}simpleEquityGoal/getPortfolioGoalStatus/${id}`)
 			.pipe(
+				retry(3),
 				tap(response => {
 					if (response.success) {
 						this.cacheService.set(key, response);
@@ -134,6 +139,7 @@ export class KinvoServiceApi {
 		return this.http.get<KinvoApiResponse<KinvoPortfolioProduct[]>>
 			(`${this.urlBase}portfolio-command/portfolioProduct/GetByPortfolio/${id}`)
 			.pipe(
+				retry(3),
 				tap(response => {
 					if (response.success) {
 						this.cacheService.set(key, response);
@@ -153,6 +159,7 @@ export class KinvoServiceApi {
 		return this.http.get<KinvoApiResponse<KinvoPortfolioProductStatement[]>>
 			(`${this.urlBase}portfolio-query/Statement/getProductStatement/${id}`)
 			.pipe(
+				retry(3),
 				tap(response => {
 					if (response.success) {
 						this.cacheService.set(key, response);
@@ -172,6 +179,7 @@ export class KinvoServiceApi {
 		return this.http.get<KinvoApiResponse<KinvoConsolidationPortfolioAsset[]>>
 			(`${this.urlBase}v2/consolidation/portfolios/${id}/assets`)
 			.pipe(
+				retry(3),
 				tap(response => {
 					if (response.success) {
 						this.cacheService.set(key, response);

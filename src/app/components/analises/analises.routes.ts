@@ -1,9 +1,9 @@
 import type { Route } from "@angular/router";
-import { RentabilidadeComponent } from "./rentabilidade.component";
+import { AnalisesComponent } from "./analises.component";
 
 export const remoteRoutes: Route[] = [
 	{
 		path: "",
-		component: RentabilidadeComponent,
+		component: AnalisesComponent,
 	},
 ];

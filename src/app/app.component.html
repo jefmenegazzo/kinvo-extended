@@ -24,6 +24,19 @@
 						</a>
 					</ng-container>
 				</ng-template>
+				<ng-template pTemplate="end">
+					<ng-container>
+						<a
+							tabindex="-1"
+							class="p-menuitem-link"
+							(click)="logout($event)"
+							(keypress)="logout($event)"
+						>
+							<span class="material-symbols-outlined"> logout </span>
+							<span class="ml-2 mr-4">Sair</span>
+						</a>
+					</ng-container>
+				</ng-template>
 			</p-menubar>
 		</div>
 	</div>

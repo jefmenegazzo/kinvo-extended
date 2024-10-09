@@ -1,5 +1,7 @@
 import { provideHttpClient, withFetch, withInterceptors } from "@angular/common/http";
 import { ApplicationConfig, isDevMode, provideZoneChangeDetection } from "@angular/core";
+import { initializeApp, provideFirebaseApp } from "@angular/fire/app";
+import { getFirestore, provideFirestore } from "@angular/fire/firestore";
 import { provideAnimationsAsync } from "@angular/platform-browser/animations/async";
 import { provideRouter } from "@angular/router";
 import { provideServiceWorker } from "@angular/service-worker";
@@ -24,6 +26,18 @@ export const appConfig: ApplicationConfig = {
 			registrationStrategy: "registerWhenStable:30000",
 		}),
 		MessageService,
-		CacheService
+		CacheService,
+		provideFirebaseApp(
+			() => initializeApp({
+				"projectId": "kinvo-extended",
+				"appId": "1:999821913952:web:8ef266efd507e23d5a7805",
+				"storageBucket": "kinvo-extended.appspot.com",
+				"apiKey": "AIzaSyCPd1NIUEPBHO0Mj5AKMN8if9-SXo_WlL0",
+				"authDomain": "kinvo-extended.firebaseapp.com",
+				"messagingSenderId": "999821913952",
+				"measurementId": "G-524BFJVPC8"
+			})
+		),
+		provideFirestore(() => getFirestore())
 	]
 };

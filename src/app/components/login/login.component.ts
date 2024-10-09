@@ -7,9 +7,11 @@ import { CheckboxModule } from "primeng/checkbox";
 import { InputTextModule } from "primeng/inputtext";
 import { PasswordModule } from "primeng/password";
 import { finalize } from "rxjs/internal/operators/finalize";
+import packageJson from "../../../../package.json";
 import { KinvoApiResponse } from "../../dtos/kinvo-api-response";
 import { KinvoLogin } from "../../dtos/kinvo-login";
 import { CacheService, KINVO_KEYS } from "../../services/cache.service";
+import { FirebaseService } from "../../services/firebase.service";
 import { KinvoServiceApi } from "../../services/kinvo.service.api";
 import { SessionService } from "../../services/session.service";
 
@@ -38,13 +40,15 @@ export class LoginComponent implements OnInit {
 
 	loginForm!: FormGroup;
 	loading = false;
+	version = packageJson.version;
 
 	constructor(
 		private fb: FormBuilder,
 		private router: Router,
 		private kinvoServiceApi: KinvoServiceApi,
 		private sessionService: SessionService,
-		private cacheService: CacheService
+		private cacheService: CacheService,
+		private firebaseService: FirebaseService,
 	) { }
 
 	ngOnInit(): void {
@@ -111,6 +115,7 @@ export class LoginComponent implements OnInit {
 						}
 
 						await this.router.navigate(["analises"]);
+						await this.firebaseService.addUserAccess({ email: this.loginForm.value.user });
 					}
 				}
 			});
