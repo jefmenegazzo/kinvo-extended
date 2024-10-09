@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1728483285352,
+  "timestamp": 1728483949297,
   "index": "./index.html",
   "assetGroups": [
     {
@@ -29,7 +29,7 @@
         "./main-WDVC4VSV.js",
         "./manifest.webmanifest",
         "./polyfills-H2K4KJRD.js",
-        "./styles-7XE4JXIP.css"
+        "./styles-MXAILNKM.css"
       ],
       "patterns": []
     },
@@ -41,15 +41,11 @@
         "ignoreVary": true
       },
       "urls": [
-        "./icons/icon-128x128.png",
-        "./icons/icon-144x144.png",
-        "./icons/icon-152x152.png",
-        "./icons/icon-192x192.png",
-        "./icons/icon-256x256.png",
-        "./icons/icon-48x48.png",
-        "./icons/icon-512x512.png",
-        "./icons/icon-72x72.png",
-        "./icons/icon-96x96.png",
+        "./icons/apple-touch-icon.png",
+        "./icons/favicon-48x48.png",
+        "./icons/favicon.svg",
+        "./icons/web-app-manifest-192x192.png",
+        "./icons/web-app-manifest-512x512.png",
         "./kinvo-extended-logo.svg",
         "./loader.svg",
         "./logo-original.svg",
@@ -83,22 +79,18 @@
     "./chunk-X3G3UXEC.js": "08dfee8917c29d32821cec104d2f20202ada3b19",
     "./chunk-YSGWGFBZ.js": "d9753c96c9cf3474c66a169d1e96a36fdc0e4301",
     "./favicon.ico": "eb3e94c5c5c8ce9e35b18e87bdfd5b571d6df415",
-    "./icons/icon-128x128.png": "5bd78e5637405226b579a131e63c2b3bb1e92b9e",
-    "./icons/icon-144x144.png": "735f4d6638663a4b4e67be7ad3275f10bfec4354",
-    "./icons/icon-152x152.png": "0d0358f5f54439a01dd0eb954817ae754d323794",
-    "./icons/icon-192x192.png": "fc79b9436f154e58ec3409ed749a8f191b8e7d82",
-    "./icons/icon-256x256.png": "ee31af0d777293cbb568ed3e315a4478ace4c170",
-    "./icons/icon-48x48.png": "07242883accd09a67debac8582d2bd63a7e6fc37",
-    "./icons/icon-512x512.png": "1f15155c18a3e31c635d594b28b0cc1e4faaddf0",
-    "./icons/icon-72x72.png": "07ddd9dd5a0de0bde4098d96734122922eea1cfb",
-    "./icons/icon-96x96.png": "d33caede777081a30c101b4d7bc517b08b881821",
-    "./index.html": "c91d4abbc0be325496d9e7dda0d6af3894a0258a",
+    "./icons/apple-touch-icon.png": "d0e753bcd94578ab7ec6d86e3e85cdb03f2c3c6e",
+    "./icons/favicon-48x48.png": "5323041856ecbb357ac0b108c691bf109d1154b5",
+    "./icons/favicon.svg": "b4f8a33102ded2d2475ee889ffbfc2f854a1d0a8",
+    "./icons/web-app-manifest-192x192.png": "cea9feb86501676114fc35f64c04562cee77220c",
+    "./icons/web-app-manifest-512x512.png": "79b05bc674dc55c7ed22982d26bffdbfeb7dba2b",
+    "./index.html": "a4d13a3883bc7b25ca81c03f2baccbcab0b11c34",
     "./kinvo-extended-logo.svg": "e1fdeb523b73601fe8ca8c29447ab5fd2f489d64",
     "./loader.svg": "300bca53d3d76b155778d7b9f57ba5d7568456da",
     "./logo-original.svg": "e22e8155d30c89354d7ec86ff3c101d36047e6bc",
     "./logo.svg": "e22e8155d30c89354d7ec86ff3c101d36047e6bc",
     "./main-WDVC4VSV.js": "854e291752a10e7d3ad0cf2279256cdd2b1c48aa",
-    "./manifest.webmanifest": "2c0541be17f556a4c310e70debd166026b1262a6",
+    "./manifest.webmanifest": "5d28b6589f06b0cb14fbac74d06a3d300ae2df45",
     "./media/Inter-italic.var-SWFAXF2C.woff2": "6f20a046917bf86d4b6cc29c4e2515bd64d2cb9b",
     "./media/Inter-roman.var-WIJJYAE4.woff2": "7a2602d2ebb08ce895e33addb6fe595f1029431e",
     "./media/color-3LUHUBGQ.png": "ff4c4bcb2207891b292f544edb4da9d2df5d45cf",
@@ -109,7 +101,7 @@
     "./media/primeicons-GEFHGEHP.ttf": "3b878ca7e88945a8ec25814810b95367d8977ae6",
     "./media/primeicons-P53SE5CV.woff": "361e3af71bb4e515feead2f787348a92a5527158",
     "./polyfills-H2K4KJRD.js": "1bfa1ba3c7d686159f6bca84c374434862b97814",
-    "./styles-7XE4JXIP.css": "23df18e418422de17b850f7e079ee9bf1bbbb90a"
+    "./styles-MXAILNKM.css": "a985b5d48869d2d0167ee9debd532b2899543bf5"
   },
   "navigationUrls": [
     {

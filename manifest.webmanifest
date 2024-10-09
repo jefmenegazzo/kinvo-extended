@@ -1,18 +1,23 @@
 {
 	"name": "Kinvo Extended",
 	"short_name": "Kinvo Extended",
-	"theme_color": "#0dcee6",
+	"theme_color": "#1976d2",
 	"background_color": "#ffffff",
 	"display": "standalone",
 	"scope": "./",
 	"start_url": "./",
 	"icons": [
 		{
-            "src": "logo.svg",
-			"sizes": "48x48 72x72 96x96 128x128 256x256 512x512",
-			"type": "image/svg+xml",
-            "purpose": "maskable any"
-
-        }
+			"src": "icons/web-app-manifest-192x192.png",
+			"sizes": "192x192",
+			"type": "image/png",
+			"purpose": "maskable"
+		},
+		{
+			"src": "icons/web-app-manifest-512x512.png",
+			"sizes": "512x512",
+			"type": "image/png",
+			"purpose": "maskable"
+		}
 	]
 }
