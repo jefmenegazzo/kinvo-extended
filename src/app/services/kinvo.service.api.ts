@@ -20,7 +20,7 @@ export class KinvoServiceApi {
 
 	urlBase = isDevMode()
 		? "kinvo/"
-		: "https://kinvo-extended-proxy.jef-menegazzo.workers.dev/https://k2c-api.kinvo.com.br";
+		: "https://kinvo-extended-proxy.jef-menegazzo.workers.dev/https://k2c-api.kinvo.com.br/";
 
 	constructor(
 		private http: HttpClient,
