@@ -39,7 +39,7 @@
 					[(ngModel)]="dataIntervalOptionsSelected"
 					[options]="dataIntervalOptions"
 					[loading]="dataFullLoading"
-					[disabled]="portfolioDataLoading || dataFullLoading"
+					[disabled]="portfolioDataLoading || dataFullLoading || dataAnalysisTypesSelected === dataAnalysisTypes[5]"
 					(onChange)="onDataIntervalChange()"
 				/>
 

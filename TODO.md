@@ -1,0 +1,2 @@
+- Adicionar tempo para expirar cache de 30min
+- Requisições quando pwa no smartphone não está em primeiro plano

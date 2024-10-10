@@ -20,7 +20,7 @@ export class KinvoServiceApi {
 
 	urlBase = isDevMode()
 		? "kinvo/"
-		: "https://kinvo-extended-proxy.jef-menegazzo.workers.dev/";
+		: "https://kinvo-extended-proxy.jef-menegazzo.workers.dev/https://k2c-api.kinvo.com.br";
 
 	constructor(
 		private http: HttpClient,
@@ -46,6 +46,17 @@ export class KinvoServiceApi {
 
 		return this.http.post<KinvoApiResponse<KinvoLogin>>
 			(`${this.urlBase}auth/sessions/refresh-token`, jsonData);
+	}
+
+	public consolidatePortfolio(id: number) {
+
+		const jsonData = {
+			portfolioId: id,
+			ignoreCache: true
+		};
+
+		return this.http.post<KinvoApiResponse<KinvoLogin>>
+			(`${this.urlBase}portfolio-command/consolidate`, jsonData);
 	}
 
 	public getPortfolios() {

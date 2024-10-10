@@ -225,6 +225,7 @@ export class AnalisesComponent implements OnInit {
 			case this.dataAnalysisTypes[5]: // "Distribuição"
 				this.aggregatorOptions = ["Estratégia", "Classe", "Instituição"];
 				this.aggregatorOptionsSelected = "Estratégia";
+				this.dataIntervalOptionsSelected = this.dataIntervalOptions[0];
 				break;
 		}
 
@@ -245,40 +246,38 @@ export class AnalisesComponent implements OnInit {
 		this.tableData = [];
 		this.chartData = undefined;
 
-		forkJoin([
-			this.kinvoServiceApi.getCapitalGainByPortfolio(this.portfolioDataSelected),
-			this.kinvoServiceApi.getPeriodicPortfolioProfitability(this.portfolioDataSelected),
-			this.kinvoServiceApi.getPortfolioProductByPortfolio(this.portfolioDataSelected),
-			this.kinvoServiceApi.getConsolidationPortfolioAssets(this.portfolioDataSelected)
-		]).pipe(
-			finalize(() => {
-				// this.dataFullLoading = false;
-			})
-		).subscribe(([capitalGain, profitability, products, consolidateAssets]) => {
+		this.kinvoServiceApi.consolidatePortfolio(this.portfolioDataSelected)
+			.subscribe(() => {
 
-			// this.dataFullLoading = true;
+				forkJoin([
+					this.kinvoServiceApi.getCapitalGainByPortfolio(this.portfolioDataSelected),
+					this.kinvoServiceApi.getPeriodicPortfolioProfitability(this.portfolioDataSelected),
+					this.kinvoServiceApi.getPortfolioProductByPortfolio(this.portfolioDataSelected),
+					this.kinvoServiceApi.getConsolidationPortfolioAssets(this.portfolioDataSelected)
+				]).subscribe(([capitalGain, profitability, products, consolidateAssets]) => {
 
-			forkJoin(
-				products.data?.map(product =>
-					this.kinvoServiceApi.getProductStatementByProduct(product.portfolioProductId).pipe(
-						tap(response => {
-							if (response.success) {
-								product.statements = response;
-							}
+					forkJoin(
+						products.data?.map(product =>
+							this.kinvoServiceApi.getProductStatementByProduct(product.portfolioProductId).pipe(
+								tap(response => {
+									if (response.success) {
+										product.statements = response;
+									}
+								})
+							))
+					).pipe(
+						finalize(() => {
+							this.dataFullLoading = false;
 						})
-					))
-			).pipe(
-				finalize(() => {
-					this.dataFullLoading = false;
-				})
-			).subscribe(() => {
+					).subscribe(() => {
 
-				if (capitalGain.success && profitability.success && products.success && consolidateAssets.success) {
-					this.mergeDataFull(capitalGain, profitability, products, consolidateAssets);
-					this.onDataIntervalChange();
-				}
+						if (capitalGain.success && profitability.success && products.success && consolidateAssets.success) {
+							this.mergeDataFull(capitalGain, profitability, products, consolidateAssets);
+							this.onDataIntervalChange();
+						}
+					});
+				});
 			});
-		});
 	}
 
 	createDataFull(date: string, dateFormat?: string): DataFull {
@@ -664,6 +663,12 @@ export class AnalisesComponent implements OnInit {
 
 	groupAssetsByAggregator(assets: DataConsolidateAsset[], aggregator: DataAggregator) {
 
+		const toTitleCase = (str: string) => {
+			return str.toLowerCase().split(" ").map((word: string) => {
+				return (word.charAt(0).toUpperCase() + word.slice(1));
+			}).join(" ");
+		};
+
 		const assetsGrouped: Record<number, Partial<DataConsolidateAsset>> = {};
 
 		for (const element of assets) {
@@ -675,19 +680,19 @@ export class AnalisesComponent implements OnInit {
 				case "Estratégia":
 					key = element.strategyOfDiversificationId;
 					obj.strategyOfDiversificationId = element.strategyOfDiversificationId;
-					obj.strategyOfDiversificationDescription = element.strategyOfDiversificationDescription;
+					obj.strategyOfDiversificationDescription = toTitleCase(element.strategyOfDiversificationDescription);
 					break;
 
 				case "Classe":
 					key = element.productTypeId;
 					obj.productTypeId = element.productTypeId;
-					obj.productTypeName = element.productTypeName;
+					obj.productTypeName = toTitleCase(element.productTypeName);
 					break;
 
 				case "Instituição":
 					key = element.financialInstitutionId;
 					obj.financialInstitutionId = element.financialInstitutionId;
-					obj.financialInstitutionName = element.financialInstitutionName;
+					obj.financialInstitutionName = toTitleCase(element.financialInstitutionName);
 					break;
 
 				default:
@@ -780,7 +785,7 @@ export class AnalisesComponent implements OnInit {
 			}
 
 			this.chartType = "bar";
-			this.chartHeight = 75 + (20 * monthlyDataFiltered.length * 5) + "px"; // TODO mudar tamanho conforme são selecionados as labels
+			this.chartHeight = 75 + (20 * monthlyDataFiltered.length * 5) + "px";
 
 			this.chartData = {
 				labels: monthlyDataFiltered
@@ -872,7 +877,25 @@ export class AnalisesComponent implements OnInit {
 						}
 					},
 					legend: {
-						position: "top"
+						position: "top",
+						onClick: (e, legendItem, legend) => {
+
+							const index = legendItem.datasetIndex!;
+							const ci = legend.chart;
+
+							if (ci.isDatasetVisible(index)) {
+								ci.hide(index);
+								legendItem.hidden = true;
+
+							} else {
+								ci.show(index);
+								legendItem.hidden = false;
+							}
+
+							const visibleItens = ci.legend!.legendItems!.map(item => (item.hidden ? 0 : 1) as number).reduce((acc, value) => acc + value, 0);
+							const chartHeight = 75 + (20 * monthlyDataFiltered.length * visibleItens);
+							(ci.canvas.parentNode as HTMLElement)!.style.height = chartHeight + "px";
+						}
 					},
 					datalabels: {
 						anchor: "end",
@@ -912,7 +935,7 @@ export class AnalisesComponent implements OnInit {
 						data: dailyDataProfitabilityFiltered.map(element => element[serie as keyof DataProfitability]) as number[],
 						fill: false,
 						tension: 0,
-						borderWidth: 1,
+						borderWidth: 2,
 						borderColor: "",
 						backgroundColor: "",
 					};
@@ -980,6 +1003,10 @@ export class AnalisesComponent implements OnInit {
 								const label = context.dataset.label || "";
 								const value = context.parsed.y || 0;
 								return `${label}: ${this.percentPipe.transform(value / 100, "1.2-2")}`;
+							},
+							title: (context) => {
+								const date = context[0].parsed.x;
+								return format(date, "dd/MM/yyyy", { locale: ptBR });
 							}
 						}
 					},
@@ -1008,7 +1035,7 @@ export class AnalisesComponent implements OnInit {
 							},
 						}
 					},
-				},
+				}
 			};
 		}
 	}

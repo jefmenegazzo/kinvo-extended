@@ -1,6 +1,6 @@
 {
 	"name": "kinvo-extended",
-	"version": "1.0.11",
+	"version": "1.0.14",
 	"private": false,
 	"engines": {
 		"node": "20.12.0",
