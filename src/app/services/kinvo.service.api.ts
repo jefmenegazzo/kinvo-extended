@@ -8,16 +8,15 @@ import { KinvoConsolidation } from "../dtos/kinvo-consolidation";
 import { KinvoConsolidationInProgress } from "../dtos/kinvo-consolidation-in-progress";
 import { KinvoConsolidationPortfolioAsset } from "../dtos/kinvo-consolidation-portfolio-asset";
 import { KinvoFinancialInstitution } from "../dtos/kinvo-finantial-institution";
+import { KinvoFundDailyEquity } from "../dtos/kinvo-fund-daily-equity";
+import { KinvoFundSnapshot } from "../dtos/kinvo-fund-snapshot";
+import { KinvoGenerateNewToken } from "../dtos/kinvo-generate-new-token";
 import { KinvoLogin } from "../dtos/kinvo-login";
 import { KinvoPortfolio } from "../dtos/kinvo-portfolio";
 import { KinvoPortfolioGoalStatus } from "../dtos/kinvo-portfolio-goal-status";
 import { KinvoPortfolioProduct } from "../dtos/kinvo-portfolio-product";
 import { KinvoPortfolioProductStatement } from "../dtos/kinvo-portfolio-product-statement";
 import { KinvoPortfolioProfitability } from "../dtos/kinvo-portfolio-profitability";
-
-import { KinvoFundDailyEquity } from "../dtos/kinvo-fund-daily-equity";
-import { KinvoFundSnapshot } from "../dtos/kinvo-fund-snapshot";
-import { KinvoGenerateNewToken } from "../dtos/kinvo-generate-new-token";
 import { StoragePayload } from "../models/storage-payload";
 import { CacheService, KINVO_KEYS } from "./cache.service";
 import { SessionService } from "./session.service";
@@ -90,6 +89,8 @@ export class KinvoServiceApi {
 
 	public consolidatePortfolio(id: number) {
 
+		const key = `consolidatePortfolio-${id}`;
+
 		const jsonData = {
 			portfolioId: id,
 			ignoreCache: true
@@ -98,7 +99,8 @@ export class KinvoServiceApi {
 		return this.http.post<KinvoApiResponse<KinvoConsolidation>>
 			(`${this.urlBase}portfolio-command/consolidate`, jsonData)
 			.pipe(
-				retry(3)
+				retry(3),
+				tap(response => this.cacheResponse(key, response))
 			);
 	}
 

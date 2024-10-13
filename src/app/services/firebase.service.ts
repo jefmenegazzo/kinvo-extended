@@ -7,6 +7,7 @@ interface UserAccessCountCollection {
 	accessCount?: FieldValue;
 }
 
+// TODO salvar configurações do usuário
 @Injectable({
 	providedIn: "root"
 })

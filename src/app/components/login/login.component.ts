@@ -10,15 +10,10 @@ import { finalize } from "rxjs/internal/operators/finalize";
 import packageJson from "../../../../package.json";
 import { KinvoApiResponse } from "../../dtos/kinvo-api-response";
 import { KinvoLogin } from "../../dtos/kinvo-login";
-import { CacheService, KINVO_KEYS } from "../../services/cache.service";
+import { StoragePayload } from "../../models/storage-payload";
 import { FirebaseService } from "../../services/firebase.service";
 import { KinvoServiceApi } from "../../services/kinvo.service.api";
 import { SessionService } from "../../services/session.service";
-
-interface StoragePayload {
-	user: string;
-	password: string;
-}
 
 @Component({
 	selector: "app-login",
@@ -47,7 +42,6 @@ export class LoginComponent implements OnInit {
 		private router: Router,
 		private kinvoServiceApi: KinvoServiceApi,
 		private sessionService: SessionService,
-		private cacheService: CacheService,
 		private firebaseService: FirebaseService,
 	) { }
 
@@ -70,8 +64,6 @@ export class LoginComponent implements OnInit {
 		if (exists) {
 			const key = await this.sessionService.loadCryptoKey();
 			const data: StoragePayload = await this.sessionService.decryptDataFromStorage(key);
-			this.cacheService.set(KINVO_KEYS.USER, data.user);
-			this.cacheService.set(KINVO_KEYS.PASSWORD, data.password);
 			this.loginForm.patchValue(data);
 			this.onSubmit();
 		}
