@@ -6,7 +6,6 @@ import { MenubarModule } from "primeng/menubar";
 import { ToastModule } from "primeng/toast";
 import { Subscription } from "rxjs/internal/Subscription";
 import { CacheService, KINVO_KEYS } from "./services/cache.service";
-import { KinvoServiceApi } from "./services/kinvo.service.api";
 import { SessionService } from "./services/session.service";
 
 @Component({
@@ -18,9 +17,6 @@ import { SessionService } from "./services/session.service";
 		RouterOutlet,
 		ToastModule,
 		MenubarModule
-	],
-	providers: [
-		KinvoServiceApi
 	],
 	templateUrl: "./app.component.html",
 	styleUrl: "./app.component.scss",
@@ -50,8 +46,14 @@ export class AppComponent implements OnInit, OnDestroy {
 	ngOnInit() {
 		this.items = [
 			{
+				label: "Dashboard",
+				icon: "track_changes",
+				routerLink: "/dashboard",
+				routerLinkActiveOptions: { exact: true }
+			},
+			{
 				label: "Análises",
-				icon: "bar_chart",
+				icon: "finance",
 				routerLink: "/analises",
 				routerLinkActiveOptions: { exact: true }
 			},
@@ -69,14 +71,8 @@ export class AppComponent implements OnInit, OnDestroy {
 			},
 			{
 				label: "Sincronização",
-				icon: "sync_alt",
+				icon: "sync",
 				routerLink: "/sincronizacao",
-				routerLinkActiveOptions: { exact: true }
-			},
-			{
-				label: "Lista de Fundos Investimento",
-				icon: "list_alt",
-				routerLink: "/lista-fundos-investimento",
 				routerLinkActiveOptions: { exact: true }
 			}
 		];

@@ -12,6 +12,11 @@ export const routes: Routes = [
 		loadChildren: () => import("./components/login/login.routes").then((m) => m.remoteRoutes),
 	},
 	{
+		path: "dashboard",
+		loadChildren: () => import("./components/dashboard/dashboard.routes").then((m) => m.remoteRoutes),
+		canActivate: [loginGuard],
+	},
+	{
 		path: "analises",
 		loadChildren: () => import("./components/analises/analises.routes").then((m) => m.remoteRoutes),
 		canActivate: [loginGuard],
@@ -29,11 +34,6 @@ export const routes: Routes = [
 	{
 		path: "sincronizacao",
 		loadChildren: () => import("./components/sincronizacao/sincronizacao.routes").then((m) => m.remoteRoutes),
-		canActivate: [loginGuard],
-	},
-	{
-		path: "lista-fundos-investimento",
-		loadChildren: () => import("./components/lista-fundos-investimento/lista-fundos-investimento.routes").then((m) => m.remoteRoutes),
 		canActivate: [loginGuard],
 	}
 ];

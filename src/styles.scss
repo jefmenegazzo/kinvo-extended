@@ -1,12 +1,11 @@
-// Primeng Settings
-// @import "primeng/resources/primeng.css";
-// @import "primeicons/primeicons.css";
-// @import "primeng/resources/themes/aura-light-blue/theme.css";
+// --------------------------------------------------------------------------------
+// PRIME NG, PRIME ICONS, TAILWIND CSS, MATERIAL SYMBOLS
+// --------------------------------------------------------------------------------
 
 @layer tailwind-base, primeng, tailwind-components, tailwind-utilities;
 
-// Please take note of the order in which these are imported
 @import "tailwindcss/base.css" layer(tailwind-base);
+// @import "primeng/resources/primeng.css"; // layer(primeng)
 @import "primeng/resources/primeng.min.css"; // layer(primeng)
 @import "primeicons/primeicons.css"; // layer(primeng)
 // @import "primeng/resources/themes/tailwind-light/theme.css"; // layer(primeng)
@@ -36,26 +35,13 @@
 @import "material-symbols/outlined.css";
 
 .material-symbols-outlined {
-	font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 0;
+	font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 48;
 	font-size: 18px;
 }
 
-html,
-body {
-	height: 100%;
-	min-height: 100%;
-	max-height: 100%;
-	font-size: 12px;
-	overflow: hidden;
-	margin: 0;
-}
-
-body,
-body .p-component,
-.p-inputtext {
-	font-family: Montserrat, sans-serif !important;
-	// font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
-}
+// --------------------------------------------------------------------------------
+//  SCROLLBAR
+// --------------------------------------------------------------------------------
 
 /* Estilizando a scrollbar para navegadores baseados em WebKit (Chrome, Safari) */
 ::-webkit-scrollbar {
@@ -102,6 +88,30 @@ body .p-component,
 // 	scrollbar-color: #a0a0a0 transparent;
 // 	/* Cor da scrollbar e do fundo, respectivamente */
 // }
+
+// --------------------------------------------------------------------------------
+//  GENERAL
+// --------------------------------------------------------------------------------
+
+$font-family: 'Montserrat', sans-serif !important;
+// $font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+
+html,
+body {
+	font-family: $font-family;
+	margin: 0;
+	height: 100%;
+	min-height: 100%;
+	max-height: 100%;
+	font-size: 12px;
+	overflow: hidden;
+}
+
+body,
+body .p-component,
+.p-inputtext {
+	font-family: $font-family;
+}
 
 .router-active {
 	background: var(--primary-color-text);

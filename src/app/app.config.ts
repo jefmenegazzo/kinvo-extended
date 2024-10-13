@@ -17,16 +17,19 @@ setDefaultOptions({ locale: ptBR });
 
 export const appConfig: ApplicationConfig = {
 	providers: [
-		provideZoneChangeDetection({ eventCoalescing: true }),
+		provideZoneChangeDetection({
+			eventCoalescing: true
+		}),
 		provideRouter(routes),
-		provideHttpClient(withFetch(), withInterceptors([requestInterceptor])),
+		provideHttpClient(
+			withFetch(),
+			withInterceptors([requestInterceptor])
+		),
 		provideAnimationsAsync(),
 		provideServiceWorker("ngsw-worker.js", {
 			enabled: !isDevMode(),
 			registrationStrategy: "registerWhenStable:30000",
 		}),
-		MessageService,
-		CacheService,
 		provideFirebaseApp(
 			() => initializeApp({
 				"projectId": "kinvo-extended",
@@ -38,6 +41,8 @@ export const appConfig: ApplicationConfig = {
 				"measurementId": "G-524BFJVPC8"
 			})
 		),
-		provideFirestore(() => getFirestore())
+		provideFirestore(() => getFirestore()),
+		MessageService,
+		CacheService,
 	]
 };

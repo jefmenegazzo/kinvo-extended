@@ -4,6 +4,7 @@ import { BehaviorSubject, Observable, of } from "rxjs";
 
 export const KINVO_KEYS = {
 	TOKEN: "kinvoToken",
+	REFRESH_TOKEN: "kinvoRenewToken",
 	USER: "kinvoUser",
 	PASSWORD: "kinvoPassword"
 };
@@ -13,6 +14,7 @@ export interface CacheChangeEvent<T = unknown> {
 	value: T;
 }
 
+// TODO adicionar tempo de vida para os dados em cache
 @Injectable({
 	providedIn: "root",
 })
@@ -20,7 +22,7 @@ export class CacheService {
 
 	private cache = new Map<string, unknown>();
 
-	public cache$ = new BehaviorSubject<CacheChangeEvent | null>(null);
+	public cache$ = new BehaviorSubject<CacheChangeEvent>({ key: "", value: null });
 
 	public set<T = unknown>(key: string, data: T, override: boolean = true): void {
 
@@ -29,7 +31,7 @@ export class CacheService {
 		}
 
 		this.cache.set(key, data);
-		this.cache$.next({ key: key, value: data });
+		this.notifyChange(key, data);
 	}
 
 	public get<T = unknown>(key: string): T {
@@ -42,15 +44,17 @@ export class CacheService {
 
 	public clear(key: string): void {
 		this.cache.delete(key);
-		this.cache$.next({ key: key, value: null });
+		this.notifyChange(key, null);
 	}
 
 	public clearAll(): void {
 
-		const keys = Array.from(this.cache.keys());
-
-		for (const key of keys) {
+		Array.from(this.cache.keys()).forEach((key) => {
 			this.clear(key);
-		}
+		});
+	}
+
+	private notifyChange<T = unknown>(key: string, value: T): void {
+		this.cache$.next({ key: key, value: value });
 	}
 }

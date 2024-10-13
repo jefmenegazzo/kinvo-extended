@@ -93,7 +93,8 @@ export class LoginComponent implements OnInit {
 
 			this.kinvoServiceApi.login(
 				this.loginForm.value.user,
-				this.loginForm.value.password
+				this.loginForm.value.password,
+				this.loginForm.value.remember
 			).pipe(
 				finalize(() => {
 					this.loginForm.enable();
@@ -103,19 +104,8 @@ export class LoginComponent implements OnInit {
 				next: async (result: KinvoApiResponse<KinvoLogin>) => {
 
 					if (result && result.success) {
-
-						this.cacheService.set(KINVO_KEYS.USER, this.loginForm.value.user);
-						this.cacheService.set(KINVO_KEYS.PASSWORD, this.loginForm.value.password);
-						this.cacheService.set(KINVO_KEYS.TOKEN, result.data.accessToken);
-
-						if (this.loginForm.value.remember) {
-							const key = await this.sessionService.generateAndStoreCryptoKey();
-							const data: StoragePayload = { user: this.loginForm.value.user, password: this.loginForm.value.password };
-							await this.sessionService.encryptAndStoreData(key, data);
-						}
-
 						await this.router.navigate(["analises"]);
-						await this.firebaseService.addUserAccess({ email: this.loginForm.value.user });
+						await this.firebaseService.incrementUserAccessCount(this.loginForm.value.user);
 					}
 				}
 			});
