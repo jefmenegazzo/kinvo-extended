@@ -42,7 +42,15 @@ export class KinvoServiceApi {
 		}
 	}
 
-	public login(user: string, password: string, remember: boolean) {
+	public login(user?: string, password?: string, remember?: boolean) {
+
+		if(!user) {
+			user = this.cacheService.get(KINVO_KEYS.USER);
+		}
+
+		if(!password) {
+			password = this.cacheService.get(KINVO_KEYS.PASSWORD);
+		}
 
 		const jsonData = {
 			email: user,
@@ -64,7 +72,7 @@ export class KinvoServiceApi {
 
 						if (remember) {
 							const key = await this.sessionService.generateAndStoreCryptoKey();
-							const data: StoragePayload = { user: user, password: password };
+							const data: StoragePayload = { user: user!, password: password! };
 							await this.sessionService.encryptAndStoreData(key, data);
 						}
 					}

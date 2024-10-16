@@ -59,6 +59,8 @@ export class LoginComponent implements OnInit {
 
 	async loadStorage() {
 
+		this.loading = true;
+
 		const exists = await this.sessionService.isEncryptedDataInStorage();
 
 		if (exists) {
@@ -67,6 +69,8 @@ export class LoginComponent implements OnInit {
 			this.loginForm.patchValue(data);
 			this.onSubmit();
 		}
+
+		this.loading = false;
 	}
 
 	onSubmit() {
@@ -96,6 +100,7 @@ export class LoginComponent implements OnInit {
 				next: async (result: KinvoApiResponse<KinvoLogin>) => {
 
 					if (result && result.success) {
+						this.loginForm.disable();
 						await this.router.navigate(["analises"]);
 						await this.firebaseService.incrementUserAccessCount(this.loginForm.value.user);
 					}
