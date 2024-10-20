@@ -42,6 +42,10 @@ export class CacheService {
 		return of(this.get<T>(key));
 	}
 
+	public has(key: string): boolean {
+		return this.cache.has(key);
+	}
+
 	public clear(key: string): void {
 		this.cache.delete(key);
 		this.notifyChange(key, null);

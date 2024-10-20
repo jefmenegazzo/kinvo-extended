@@ -1,20 +1,20 @@
-<div class="flex items-center justify-center h-full w-full bg-white md:bg-gray-100">
-	<div class="flex flex-col landscape:flex-row md:landscape:flex-col bg-white p-12 rounded-lg md:shadow-md">
+<div class="flex items-center justify-center h-full w-full bg-white lg:bg-gray-100">
+	<div class="flex flex-col landscape:flex-row lg:landscape:flex-col bg-white p-12 rounded-lg lg:shadow-md">
 		<div class="flex flex-col text-center w-[275px]">
 			<img
-				src="logo.svg"
+				src="kinvo-icon-logo.svg"
 				alt="Logo"
 				class="w-36 h-36 mx-auto"
 			/>
 			<img
-				src="kinvo-extended-logo.svg"
+				src="kinvo-text-logo.svg"
 				alt="Logo"
 				class="w-48 h-20 mx-auto"
 			/>
 			<span style="font-size: 25px; color: #0dcee6">extended</span>
 		</div>
 
-		<div class="flex flex-col mt-0 mr-8 md:landscape:mr-0 portrait:mr-0 md:landscape:mt-8 portrait:mt-8 w-[275px]">
+		<div class="flex flex-col mt-0 mr-8 lg:landscape:mr-0 portrait:mr-0 lg:landscape:mt-8 portrait:mt-8 w-[275px]">
 			<form
 				[formGroup]="loginForm"
 				(ngSubmit)="onSubmit()"
@@ -66,12 +66,13 @@
 					class="w-full"
 					type="submit"
 					[loading]="loading"
+					[disabled]="loading"
 				></button>
 			</form>
 		</div>
 	</div>
 </div>
 
-<div class="version-div">
+<div class="fixed bottom-3 right-3">
 	<span>Versão: {{ version }}</span>
 </div>

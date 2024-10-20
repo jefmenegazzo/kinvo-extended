@@ -1,424 +1,170 @@
-<div class="flex flex-col gap-4 w-full h-full p-4">
-	<div class="flex flex-col justify-between gap-4 md:flex-row">
-		<div class="flex flex-col gap-4 md:flex-row">
-			<div class="flex flex-row w-full">
+<div class="flex flex-col h-full w-full">
+	<div class="flex flex-col flex-none">
+		<p-tabMenu
+			styleClass="whitespace-nowrap"
+			[scrollable]="true"
+			[model]="dataAnalysisTypesMenuItens"
+			[activeItem]="dataAnalysisTypesActiveItem"
+		>
+			<ng-template
+				pTemplate="item"
+				let-item
+			>
+				<a
+					pRipple
+					class="flex align-items-center gap-2 p-menuitem-link whitespace-nowrap"
+				>
+					<span class="font-bold">
+						{{ item.label }}
+					</span>
+				</a>
+			</ng-template>
+		</p-tabMenu>
+	</div>
+
+	<div class="flex flex-col flex-grow overflow-auto w-full h-full gap-4 p-4">
+		<div class="flex flex-col flex-none gap-4 md:flex-row">
+			<div class="flex flex-row">
 				<p-button
 					type="button"
+					icon="pi pi-wallet"
 					label="Carteira"
 					severity="secondary"
-					styleClass="rounded-none rounded-l-lg border-slate-300"
+					styleClass="rounded-none rounded-l-lg border-gray-300"
 				/>
 
 				<p-dropdown
+					class="w-full min-w-[150px]"
 					styleClass="p-dropdown-sm rounded-none rounded-r-lg w-full"
-					class="p-dropdown-sm w-full"
+					panelStyleClass="max-w-[350px]"
 					[options]="portfolioData"
 					[(ngModel)]="portfolioDataSelected"
-					placeholder="Selecione a Carteira"
 					[loading]="portfolioDataLoading"
 					optionLabel="title"
 					optionValue="id"
-					[disabled]="portfolioDataLoading || dataFullLoading"
+					[disabled]="loading"
 					(onChange)="onPorfolioChange()"
 				/>
 			</div>
 
-			<div class="flex flex-row w-full">
+			<div class="flex flex-row">
 				<p-button
 					type="button"
+					icon="pi pi-calendar"
 					label="Período"
 					severity="secondary"
-					styleClass="rounded-none rounded-l-lg border-slate-300"
+					styleClass="rounded-none rounded-l-lg border-gray-300"
 				/>
 
 				<p-dropdown
-					class="p-dropdown-sm"
+					class="w-full min-w-[150px]"
 					styleClass="p-dropdown-sm rounded-none w-full"
-					class="p-dropdown-sm w-full"
-					placeholder="Selecione o Período"
 					[(ngModel)]="dataIntervalOptionsSelected"
 					[options]="dataIntervalOptions"
-					[loading]="dataFullLoading"
-					[disabled]="portfolioDataLoading || dataFullLoading || dataAnalysisTypesSelected === dataAnalysisTypes[5]"
+					[loading]="generalFilterOptionsLoading"
+					[disabled]="loading || dataAnalysisTypesSelected === dataAnalysisTypes[5]"
 					(onChange)="onDataIntervalChange()"
 				/>
 
 				<p-calendar
-					inputStyleClass="rounded-none rounded-r-lg w-48"
-					[(ngModel)]="dateRange"
+					class="w-full min-w-[150px]"
+					styleClass="w-full"
+					inputStyleClass="rounded-none rounded-r-lg w-full"
 					selectionMode="range"
 					[readonlyInput]="true"
+					[(ngModel)]="dateRange"
 					view="month"
 					dateFormat="mm/yy"
-					[disabled]="portfolioDataLoading || dataFullLoading || dataIntervalOptionsSelected !== 'Personalizado'"
+					[disabled]="loading || dataIntervalOptionsSelected !== dataIntervalOptions[8]"
 					(ngModelChange)="onDataIntervalChange($event)"
 				/>
 			</div>
 
-			<div class="flex flex-row w-full xl:hidden">
+			<div class="flex flex-row">
 				<p-button
 					type="button"
-					label="Análise"
-					severity="secondary"
-					styleClass="rounded-none rounded-l-lg border-slate-300"
-				/>
-
-				<p-dropdown
-					styleClass="p-dropdown-sm rounded-none rounded-r-lg w-full"
-					class="p-dropdown-sm w-full"
-					placeholder="Selecione a Análise"
-					[(ngModel)]="dataAnalysisTypesSelected"
-					[options]="dataAnalysisTypes"
-					[loading]="dataFullLoading"
-					[disabled]="portfolioDataLoading || dataFullLoading"
-					(onChange)="onDataAnalysisTypeChange()"
-				/>
-			</div>
-
-			<div class="flex flex-row w-full">
-				<p-button
-					type="button"
+					icon="pi pi-calculator"
 					label="Agregador"
 					severity="secondary"
-					styleClass="rounded-none rounded-l-lg border-slate-300"
+					styleClass="rounded-none rounded-l-lg border-gray-300"
 				/>
 
 				<p-dropdown
+					class="w-full min-w-[150px]"
 					styleClass="p-dropdown-sm rounded-none rounded-r-lg w-full"
-					class="p-dropdown-sm w-full"
 					[options]="aggregatorOptions"
 					[(ngModel)]="aggregatorOptionsSelected"
-					placeholder="Selecione o Agregador"
-					[loading]="dataFullLoading"
-					[disabled]="portfolioDataLoading || dataFullLoading"
+					[disabled]="loading"
 					(onChange)="onAggregatorChange()"
 				/>
 			</div>
-		</div>
 
-		<div class="hidden flex-row w-full justify-end xl:flex">
-			<p-selectButton
-				[options]="dataAnalysisTypes"
-				[(ngModel)]="dataAnalysisTypesSelected"
-				[multiple]="false"
-				[disabled]="portfolioDataLoading || dataFullLoading"
-				[unselectable]="false"
-				[allowEmpty]="false"
-				(onChange)="onDataAnalysisTypeChange()"
-			/>
-		</div>
-	</div>
+			<div class="flex flex-row">
+				<p-button
+					type="button"
+					icon="pi pi-filter"
+					label="Filtros"
+					severity="secondary"
+					styleClass="rounded-none rounded-l-lg border-slate-300"
+				/>
 
-	<div [ngSwitch]="dataAnalysisTypesSelected">
-		<div *ngSwitchCase="dataAnalysisTypes[0]">
-			<div class="border rounded data-panel mb-4">
-				<p-table
-					#dt
-					[value]="tableData"
-					[scrollable]="true"
-					scrollHeight="flex"
-					[tableStyle]="{ 'min-width': '50rem' }"
-					styleClass="p-datatable-sm p-datatable-gridlines"
-					selectionMode="single"
-					sortField="referenceDate"
-					[sortOrder]="-1"
-				>
-					<ng-template pTemplate="header">
-						<tr>
-							<th
-								pFrozenColumn
-								colspan="1"
-							>
-								<p-button
-									[rounded]="true"
-									severity="secondary"
-									styleClass="p-button-sm "
-									icon="pi pi-external-link"
-									label="Exportar"
-									(onClick)="downloadTableCSV()"
-									[disabled]="portfolioDataLoading || dataFullLoading"
-								/>
-							</th>
-							<th colspan="9">Saldos</th>
-							<th colspan="4">Impostos e Taxas</th>
-							<th colspan="5">Rentabilidade</th>
-						</tr>
-
-						<tr>
-							<th
-								pSortableColumn="referenceDate"
-								pFrozenColumn
-								class="border"
-							>
-								Período
-								<p-sortIcon field="referenceDate" />
-							</th>
-							<th pSortableColumn="valueApplied">
-								Valor Investido
-								<p-sortIcon field="valueApplied" />
-							</th>
-							<th pSortableColumn="initialEquity">
-								Saldo Inicial
-								<p-sortIcon field="initialEquity" />
-							</th>
-							<th pSortableColumn="applications">
-								Aplicações
-								<p-sortIcon field="applications" />
-							</th>
-							<th pSortableColumn="redemptions">
-								Resgates
-								<p-sortIcon field="redemptions" />
-							</th>
-							<th pSortableColumn="movementations">
-								Movimentação
-								<p-sortIcon field="movementations" />
-							</th>
-							<th pSortableColumn="returns">
-								Rendimentos
-								<p-sortIcon field="returns" />
-							</th>
-							<th pSortableColumn="proceeds">
-								Proventos
-								<p-sortIcon field="proceeds" />
-							</th>
-							<th pSortableColumn="capitalGain">
-								Ganho de Capital
-								<p-sortIcon field="capitalGain" />
-							</th>
-							<th pSortableColumn="finalEquity">
-								Saldo Final
-								<p-sortIcon field="finalEquity" />
-							</th>
-							<th pSortableColumn="incomeTax">
-								IR
-								<p-sortIcon field="incomeTax" />
-							</th>
-							<th pSortableColumn="iof">
-								IOF
-								<p-sortIcon field="iof" />
-							</th>
-							<th pSortableColumn="cost">
-								Taxas
-								<p-sortIcon field="cost" />
-							</th>
-							<th pSortableColumn="charges">
-								Encargos
-								<p-sortIcon field="charges" />
-							</th>
-							<th pSortableColumn="profitabilityCarteira">
-								Carteira
-								<p-sortIcon field="profitabilityCarteira" />
-							</th>
-							<th pSortableColumn="profitabilityCdi">
-								CDI
-								<p-sortIcon field="profitabilityCdi" />
-							</th>
-							<th pSortableColumn="profitabilityIbov">
-								IBOV
-								<p-sortIcon field="profitabilityIbov" />
-							</th>
-							<th pSortableColumn="profitabilityInflacao">
-								IPCA
-								<p-sortIcon field="profitabilityInflacao" />
-							</th>
-							<th pSortableColumn="profitabilityPoupanca">
-								Poupança
-								<p-sortIcon field="profitabilityPoupanca" />
-							</th>
-						</tr>
-					</ng-template>
-
-					<ng-template
-						pTemplate="body"
-						let-row
-					>
-						<tr>
-							<td
-								pFrozenColumn
-								class="text-center font-semibold"
-							>
-								{{ row.referenceDate | date : (aggregatorOptionsSelected == "Ano" ? "yyyy" : "MM/yyyy") }}
-							</td>
-							<td class="text-right">
-								{{ row.valueApplied | currency : "BRL" }}
-							</td>
-							<td class="text-right">
-								{{ row.initialEquity | currency : "BRL" }}
-							</td>
-							<td class="text-right">
-								{{ row.applications | currency : "BRL" }}
-							</td>
-							<td class="text-right">
-								{{ row.redemptions | currency : "BRL" }}
-							</td>
-							<td
-								class="text-right font-semibold"
-								[ngClass]="row.movementations < 0 ? 'text-red-500' : 'text-green-500'"
-							>
-								{{ row.movementations | currency : "BRL" }}
-							</td>
-							<td class="text-right">
-								{{ row.returns | currency : "BRL" }}
-							</td>
-							<td class="text-right">
-								{{ row.proceeds | currency : "BRL" }}
-							</td>
-							<td
-								class="text-right font-semibold"
-								[ngClass]="row.capitalGain < 0 ? 'text-red-500' : 'text-green-500'"
-							>
-								{{ row.capitalGain | currency : "BRL" }}
-							</td>
-							<td class="text-right">
-								{{ row.finalEquity | currency : "BRL" }}
-							</td>
-							<td class="text-right">
-								{{ row.incomeTax | currency : "BRL" }}
-							</td>
-							<td class="text-right">
-								{{ row.iof | currency : "BRL" }}
-							</td>
-							<td class="text-right">
-								{{ row.cost | currency : "BRL" }}
-							</td>
-							<td class="text-right">
-								{{ row.charges | currency : "BRL" }}
-							</td>
-							<td
-								class="text-right font-semibold"
-								[ngClass]="row.profitabilityCarteira < 0 ? 'text-red-500' : 'text-green-500'"
-							>
-								{{ row.profitabilityCarteira | percent : "1.2-2" }}
-							</td>
-							<td class="text-left">
-								<div class="flex justify-between">
-									<span>{{ row.profitabilityCdi | percent : "1.2-2" }}</span>
-									<span> ({{ (row.profitabilityCarteiraPercentCdi | percent : "1.2-2") || "N/A" }}) </span>
-								</div>
-							</td>
-							<td class="text-left">
-								<div class="flex justify-between">
-									<span>{{ row.profitabilityIbov | percent : "1.2-2" }}</span>
-									<span> ({{ (row.profitabilityCarteiraPercentIbov | percent : "1.2-2") || "N/A" }}) </span>
-								</div>
-							</td>
-							<td class="text-left">
-								<div class="flex justify-between">
-									<span>{{ row.profitabilityInflacao | percent : "1.2-2" }}</span>
-									<span> ({{ (row.profitabilityCarteiraPercentInflacao | percent : "1.2-2") || "N/A" }}) </span>
-								</div>
-							</td>
-							<td class="text-left">
-								<div class="flex justify-between">
-									<span>{{ row.profitabilityPoupanca | percent : "1.2-2" }}</span>
-									<span> ({{ (row.profitabilityCarteiraPercentPoupanca | percent : "1.2-2") || "N/A" }}) </span>
-								</div>
-							</td>
-						</tr>
-					</ng-template>
-
-					<ng-template pTemplate="footer">
-						<ng-template [ngIf]="portfolioDataLoading || dataFullLoading">
-							<tr *ngFor="let i of [].constructor(20); index as x">
-								<td pFrozenColumn>
-									<p-skeleton />
-								</td>
-								<td *ngFor="let j of [].constructor(18); index as y">
-									<p-skeleton />
-								</td>
-							</tr>
-						</ng-template>
-
-						<tr>
-							<td
-								pFrozenColumn
-								class="text-center"
-							>
-								Totais
-							</td>
-							<td class="text-right">
-								{{ tableDataTotalsRow.valueApplied | currency : "BRL" }}
-							</td>
-							<td class="text-right">
-								{{ tableDataTotalsRow.initialEquity | currency : "BRL" }}
-							</td>
-							<td class="text-right">
-								{{ tableDataTotalsRow.applications | currency : "BRL" }}
-							</td>
-							<td class="text-right">
-								{{ tableDataTotalsRow.redemptions | currency : "BRL" }}
-							</td>
-							<td class="text-right">
-								{{ tableDataTotalsRow.movementations | currency : "BRL" }}
-							</td>
-							<td class="text-right">
-								{{ tableDataTotalsRow.returns | currency : "BRL" }}
-							</td>
-							<td class="text-right">
-								{{ tableDataTotalsRow.proceeds | currency : "BRL" }}
-							</td>
-							<td class="text-right">
-								{{ tableDataTotalsRow.capitalGain | currency : "BRL" }}
-							</td>
-							<td class="text-right">
-								{{ tableDataTotalsRow.finalEquity | currency : "BRL" }}
-							</td>
-							<td class="text-right">
-								{{ tableDataTotalsRow.incomeTax | currency : "BRL" }}
-							</td>
-							<td class="text-right">
-								{{ tableDataTotalsRow.iof | currency : "BRL" }}
-							</td>
-							<td class="text-right">
-								{{ tableDataTotalsRow.cost | currency : "BRL" }}
-							</td>
-							<td class="text-right">
-								{{ tableDataTotalsRow.charges | currency : "BRL" }}
-							</td>
-							<td class="text-right">
-								{{ tableDataTotalsRow.profitabilityCarteira | percent : "1.2-2" }}
-							</td>
-							<td class="text-right">
-								<div class="flex justify-between">
-									<span>{{ tableDataTotalsRow.profitabilityCdi | percent : "1.2-2" }}</span>
-									<span> ({{ (tableDataTotalsRow.profitabilityCarteiraPercentCdi | percent : "1.2-2") || "N/A" }}) </span>
-								</div>
-							</td>
-							<td class="text-right">
-								<div class="flex justify-between">
-									<span>{{ tableDataTotalsRow.profitabilityIbov | percent : "1.2-2" }}</span>
-									<span> ({{ (tableDataTotalsRow.profitabilityCarteiraPercentIbov | percent : "1.2-2") || "N/A" }}) </span>
-								</div>
-							</td>
-							<td class="text-right">
-								<div class="flex justify-between">
-									<span>{{ tableDataTotalsRow.profitabilityInflacao | percent : "1.2-2" }}</span>
-									<span> ({{ (tableDataTotalsRow.profitabilityCarteiraPercentInflacao | percent : "1.2-2") || "N/A" }}) </span>
-								</div>
-							</td>
-							<td class="text-right">
-								<div class="flex justify-between">
-									<span>{{ tableDataTotalsRow.profitabilityPoupanca | percent : "1.2-2" }}</span>
-									<span> ({{ (tableDataTotalsRow.profitabilityCarteiraPercentPoupanca | percent : "1.2-2") || "N/A" }}) </span>
-								</div>
-							</td>
-						</tr>
-					</ng-template>
-				</p-table>
+				<p-dropdown
+					class="w-full min-w-[150px]"
+					styleClass="p-dropdown-sm rounded-none rounded-r-lg w-full"
+					panelStyleClass="max-w-[250px] md:max-w-[350px]"
+					placeholder="Tudo"
+					[loading]="generalFilterOptionsLoading"
+					[disabled]="loading"
+					[options]="generalFilterOptions"
+					[(ngModel)]="generalFilterOptionsSelected"
+					(onChange)="onGeneralFilterChange()"
+					[group]="true"
+					[filter]="true"
+					filterBy="label"
+					[showClear]="true"
+				/>
 			</div>
 		</div>
 
-		<div
-			*ngSwitchDefault
-			class="data-panel mb-4"
-		>
-			<p-chart
-				[type]="chartType"
-				[data]="chartData"
-				[options]="chartOptions"
-				[plugins]="chartPlugins"
-				[height]="chartHeight"
-			/>
+		<div class="flex flex-grow flex-col">
+			@switch (dataAnalysisTypesSelected) { @case (dataAnalysisTypes[0]) {
+			<app-resumo
+				[loading]="loading"
+				[aggregatedDataByDate]="aggregatedDataByDate"
+				[aggregatedDataByDateTotals]="aggregatedDataByDateTotals"
+				[aggregatorOptionsSelected]="aggregatorOptionsSelected"
+			></app-resumo>
+			} @case (dataAnalysisTypes[1]) {
+			<app-rentabilidade
+				[loading]="loading"
+				[aggregatedProfitabilityByDate]="aggregatedProfitabilityByDate"
+				[aggregatedDataByDate]="aggregatedDataByDate"
+				[aggregatorOptionsSelected]="aggregatorOptionsSelected"
+			></app-rentabilidade>
+			} @case (dataAnalysisTypes[2]) {
+			<app-ganho-capital
+				[loading]="loading"
+				[aggregatedDataByDate]="aggregatedDataByDate"
+				[aggregatorOptionsSelected]="aggregatorOptionsSelected"
+			></app-ganho-capital>
+			} @case (dataAnalysisTypes[3]) {
+			<app-movimentacao
+				[loading]="loading"
+				[aggregatedDataByDate]="aggregatedDataByDate"
+				[aggregatorOptionsSelected]="aggregatorOptionsSelected"
+			></app-movimentacao>
+			} @case (dataAnalysisTypes[4]) {
+			<app-patrimonio
+				[loading]="loading"
+				[aggregatedDataByDate]="aggregatedDataByDate"
+				[aggregatorOptionsSelected]="aggregatorOptionsSelected"
+			></app-patrimonio>
+			} @case (dataAnalysisTypes[5]) {
+			<app-distribuicao
+				[loading]="loading"
+				[aggregatedDataByLabel]="aggregatedDataByLabel"
+			></app-distribuicao>
+			} }
 		</div>
 	</div>
 </div>
