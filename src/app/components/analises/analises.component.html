@@ -1,196 +1,170 @@
-<p-tabMenu
-	[model]="dataAnalysisTypesMenuItens"
-	[activeItem]="dataAnalysisTypesActiveItem"
->
-	<ng-template
-		pTemplate="item"
-		let-item
-	>
-		<a
-			pRipple
-			class="flex align-items-center gap-2 p-menuitem-link"
+<div class="flex flex-col h-full w-full">
+	<div class="flex flex-col flex-none">
+		<p-tabMenu
+			styleClass="whitespace-nowrap"
+			[scrollable]="true"
+			[model]="dataAnalysisTypesMenuItens"
+			[activeItem]="dataAnalysisTypesActiveItem"
 		>
-			<span class="font-bold">
-				{{ item.label }}
-			</span>
-		</a>
-	</ng-template>
-</p-tabMenu>
-
-<!-- <p-tabView
-	[scrollable]="true"
-	styleClass="whitespace-nowrap"
-	(onChange)="onDataAnalysisTypeChange($event)"
->
-	<ng-template
-		ngFor
-		let-item
-		[ngForOf]="dataAnalysisTypes"
-		let-i="index"
-	>
-		<p-tabPanel class="flex flex-col bg-gray-50">
-			<ng-template pTemplate="header">
-				<div class="flex align-items-center gap-2">
-					<span class="font-bold whitespace-nowrap m-0"> {{ item }} </span>
-				</div>
-			</ng-template>
-
-			<ng-template pTemplate="content">
-				<div>
-					<app-toolbar-filters [dataAnalysisTypesSelected]="item"></app-toolbar-filters>
-				</div>
-
-				<div
-					[ngSwitch]="item"
-					class="w-full h-full"
+			<ng-template
+				pTemplate="item"
+				let-item
+			>
+				<a
+					pRipple
+					class="flex align-items-center gap-2 p-menuitem-link whitespace-nowrap"
 				>
-					<app-resumo *ngSwitchCase="'Resumo'"></app-resumo>
-					<app-rentabilidade *ngSwitchCase="'Rentabilidade'"></app-rentabilidade>
-					<app-ganho-capital *ngSwitchCase="'Ganho de Capital'"></app-ganho-capital>
-					<app-movimentacao *ngSwitchCase="'Movimentação'"></app-movimentacao>
-					<app-patrimonio *ngSwitchCase="'Patrimônio'"></app-patrimonio>
-					<app-distribuicao *ngSwitchCase="'Distribuição'"></app-distribuicao>
-				</div>
+					<span class="font-bold">
+						{{ item.label }}
+					</span>
+				</a>
 			</ng-template>
-		</p-tabPanel>
-	</ng-template>
-</p-tabView> -->
+		</p-tabMenu>
+	</div>
 
-<div class="flex flex-col gap-4 w-full h-full p-4">
-	<div class="flex flex-col justify-between gap-4 md:flex-row">
-		<div class="flex flex-col gap-4 md:flex-row">
-			<div class="flex flex-row w-full">
+	<div class="flex flex-col flex-grow overflow-auto w-full h-full gap-4 p-4">
+		<div class="flex flex-col flex-none gap-4 md:flex-row">
+			<div class="flex flex-row">
 				<p-button
 					type="button"
+					icon="pi pi-wallet"
 					label="Carteira"
 					severity="secondary"
-					styleClass="rounded-none rounded-l-lg border-slate-300"
+					styleClass="rounded-none rounded-l-lg border-gray-300"
 				/>
 
 				<p-dropdown
+					class="w-full min-w-[150px]"
 					styleClass="p-dropdown-sm rounded-none rounded-r-lg w-full"
-					class="p-dropdown-sm w-full"
+					panelStyleClass="max-w-[350px]"
 					[options]="portfolioData"
 					[(ngModel)]="portfolioDataSelected"
-					placeholder="Selecione a Carteira"
 					[loading]="portfolioDataLoading"
 					optionLabel="title"
 					optionValue="id"
-					[disabled]="portfolioDataLoading || dataFullLoading"
+					[disabled]="loading"
 					(onChange)="onPorfolioChange()"
 				/>
 			</div>
 
-			<div class="flex flex-row w-full">
+			<div class="flex flex-row">
 				<p-button
 					type="button"
+					icon="pi pi-calendar"
 					label="Período"
 					severity="secondary"
-					styleClass="rounded-none rounded-l-lg border-slate-300"
+					styleClass="rounded-none rounded-l-lg border-gray-300"
 				/>
 
 				<p-dropdown
-					class="p-dropdown-sm"
+					class="w-full min-w-[150px]"
 					styleClass="p-dropdown-sm rounded-none w-full"
-					class="p-dropdown-sm w-full"
-					placeholder="Selecione o Período"
 					[(ngModel)]="dataIntervalOptionsSelected"
 					[options]="dataIntervalOptions"
-					[loading]="dataFullLoading"
-					[disabled]="portfolioDataLoading || dataFullLoading || dataAnalysisTypesSelected === dataAnalysisTypes[5]"
+					[loading]="generalFilterOptionsLoading"
+					[disabled]="loading || dataAnalysisTypesSelected === dataAnalysisTypes[5]"
 					(onChange)="onDataIntervalChange()"
 				/>
 
 				<p-calendar
-					inputStyleClass="rounded-none rounded-r-lg w-48"
-					[(ngModel)]="dateRange"
+					class="w-full min-w-[150px]"
+					styleClass="w-full"
+					inputStyleClass="rounded-none rounded-r-lg w-full"
 					selectionMode="range"
 					[readonlyInput]="true"
+					[(ngModel)]="dateRange"
 					view="month"
 					dateFormat="mm/yy"
-					[disabled]="portfolioDataLoading || dataFullLoading || dataIntervalOptionsSelected !== 'Personalizado'"
+					[disabled]="loading || dataIntervalOptionsSelected !== dataIntervalOptions[8]"
 					(ngModelChange)="onDataIntervalChange($event)"
 				/>
 			</div>
 
-			<!-- <div class="flex flex-row w-full xl:hidden">
+			<div class="flex flex-row">
 				<p-button
 					type="button"
-					label="Análise"
-					severity="secondary"
-					styleClass="rounded-none rounded-l-lg border-slate-300"
-				/>
-
-				<p-dropdown
-					styleClass="p-dropdown-sm rounded-none rounded-r-lg w-full"
-					class="p-dropdown-sm w-full"
-					placeholder="Selecione a Análise"
-					[(ngModel)]="dataAnalysisTypesSelected"
-					[options]="dataAnalysisTypes"
-					[loading]="dataFullLoading"
-					[disabled]="portfolioDataLoading || dataFullLoading"
-					(onChange)="onDataAnalysisTypeChange()"
-				/>
-			</div> -->
-
-			<div class="flex flex-row w-full">
-				<p-button
-					type="button"
+					icon="pi pi-calculator"
 					label="Agregador"
 					severity="secondary"
-					styleClass="rounded-none rounded-l-lg border-slate-300"
+					styleClass="rounded-none rounded-l-lg border-gray-300"
 				/>
 
 				<p-dropdown
+					class="w-full min-w-[150px]"
 					styleClass="p-dropdown-sm rounded-none rounded-r-lg w-full"
-					class="p-dropdown-sm w-full"
 					[options]="aggregatorOptions"
 					[(ngModel)]="aggregatorOptionsSelected"
-					placeholder="Selecione o Agregador"
-					[loading]="dataFullLoading"
-					[disabled]="portfolioDataLoading || dataFullLoading"
+					[disabled]="loading"
 					(onChange)="onAggregatorChange()"
 				/>
 			</div>
-		</div>
-		<!--
-		<div class="hidden flex-row w-full justify-end xl:flex">
-			<p-selectButton
-				[options]="dataAnalysisTypes"
-				[(ngModel)]="dataAnalysisTypesSelected"
-				[multiple]="false"
-				[disabled]="portfolioDataLoading || dataFullLoading"
-				[unselectable]="false"
-				[allowEmpty]="false"
-				(onChange)="onDataAnalysisTypeChange()"
-			/>
-		</div> -->
-	</div>
 
-	<div [ngSwitch]="dataAnalysisTypesSelected">
-		<div *ngSwitchCase="dataAnalysisTypes[0]">
-			<app-resumo [portfolioDataLoading]="portfolioDataLoading" [dataFullLoading]="dataFullLoading" [aggregatorOptionsSelected]="aggregatorOptionsSelected"></app-resumo>
-		</div>
+			<div class="flex flex-row">
+				<p-button
+					type="button"
+					icon="pi pi-filter"
+					label="Filtros"
+					severity="secondary"
+					styleClass="rounded-none rounded-l-lg border-slate-300"
+				/>
 
-		<div *ngSwitchCase="dataAnalysisTypes[1]">
-			<app-rentabilidade [aggregatorOptionsSelected]="aggregatorOptionsSelected" [monthlyDataFiltered]="monthlyDataFiltered" [dailyDataProfitabilityFiltered]="dailyDataProfitabilityFiltered"></app-rentabilidade>
-		</div>
-
-		<div *ngSwitchCase="dataAnalysisTypes[2]">
-			<app-ganho-capital [aggregatorOptionsSelected]="aggregatorOptionsSelected" [monthlyDataFiltered]="monthlyDataFiltered"></app-ganho-capital>
-		</div>
-
-		<div *ngSwitchCase="dataAnalysisTypes[3]">
-			<app-movimentacao [aggregatorOptionsSelected]="aggregatorOptionsSelected" [monthlyDataFiltered]="monthlyDataFiltered"></app-movimentacao>
+				<p-dropdown
+					class="w-full min-w-[150px]"
+					styleClass="p-dropdown-sm rounded-none rounded-r-lg w-full"
+					panelStyleClass="max-w-[250px] md:max-w-[350px]"
+					placeholder="Tudo"
+					[loading]="generalFilterOptionsLoading"
+					[disabled]="loading"
+					[options]="generalFilterOptions"
+					[(ngModel)]="generalFilterOptionsSelected"
+					(onChange)="onGeneralFilterChange()"
+					[group]="true"
+					[filter]="true"
+					filterBy="label"
+					[showClear]="true"
+				/>
+			</div>
 		</div>
 
-		<div *ngSwitchCase="dataAnalysisTypes[4]">
-			<app-patrimonio [aggregatorOptionsSelected]="aggregatorOptionsSelected" [monthlyDataFiltered]="monthlyDataFiltered"></app-patrimonio>
+		<div class="flex flex-grow flex-col">
+			@switch (dataAnalysisTypesSelected) { @case (dataAnalysisTypes[0]) {
+			<app-resumo
+				[loading]="loading"
+				[aggregatedDataByDate]="aggregatedDataByDate"
+				[aggregatedDataByDateTotals]="aggregatedDataByDateTotals"
+				[aggregatorOptionsSelected]="aggregatorOptionsSelected"
+			></app-resumo>
+			} @case (dataAnalysisTypes[1]) {
+			<app-rentabilidade
+				[loading]="loading"
+				[aggregatedProfitabilityByDate]="aggregatedProfitabilityByDate"
+				[aggregatedDataByDate]="aggregatedDataByDate"
+				[aggregatorOptionsSelected]="aggregatorOptionsSelected"
+			></app-rentabilidade>
+			} @case (dataAnalysisTypes[2]) {
+			<app-ganho-capital
+				[loading]="loading"
+				[aggregatedDataByDate]="aggregatedDataByDate"
+				[aggregatorOptionsSelected]="aggregatorOptionsSelected"
+			></app-ganho-capital>
+			} @case (dataAnalysisTypes[3]) {
+			<app-movimentacao
+				[loading]="loading"
+				[aggregatedDataByDate]="aggregatedDataByDate"
+				[aggregatorOptionsSelected]="aggregatorOptionsSelected"
+			></app-movimentacao>
+			} @case (dataAnalysisTypes[4]) {
+			<app-patrimonio
+				[loading]="loading"
+				[aggregatedDataByDate]="aggregatedDataByDate"
+				[aggregatorOptionsSelected]="aggregatorOptionsSelected"
+			></app-patrimonio>
+			} @case (dataAnalysisTypes[5]) {
+			<app-distribuicao
+				[loading]="loading"
+				[aggregatedDataByLabel]="aggregatedDataByLabel"
+			></app-distribuicao>
+			} }
 		</div>
-
-		<div *ngSwitchCase="dataAnalysisTypes[5]">
-			<app-distribuicao [consolidateAssetsFiltered]="consolidatedAssetsFiltered"></app-distribuicao>
-		</div>
-
 	</div>
 </div>

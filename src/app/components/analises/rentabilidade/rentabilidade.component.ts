@@ -1,13 +1,13 @@
-import { CommonModule, CurrencyPipe, PercentPipe } from "@angular/common";
-import { Component, Input, OnChanges } from "@angular/core";
+import { CommonModule, PercentPipe } from "@angular/common";
+import { Component, Input, OnChanges, SimpleChanges } from "@angular/core";
 import { ChartData, ChartDataset, ChartOptions, ChartType, Plugin } from "chart.js";
 import ChartDataLabels from "chartjs-plugin-datalabels";
 import { format } from "date-fns/format";
 import { ptBR } from "date-fns/locale/pt-BR";
 import { ChartModule } from "primeng/chart";
-import { DataFull } from "../../../models/data-full";
-import { DataProfitability } from "../../../models/data-profitability";
-import { DataAggregator } from "../analises.constants";
+import { AggregatedDataByDate } from "../../../models/aggregated-data-by-date";
+import { AggregatedProfitabilityByDate } from "../../../models/aggregated-profitability-by-date";
+import { DataAggregator } from "../analises.component";
 
 @Component({
 	selector: "app-rentabilidade",
@@ -16,19 +16,27 @@ import { DataAggregator } from "../analises.constants";
 		CommonModule,
 		ChartModule
 	],
+	providers: [
+		PercentPipe
+	],
 	templateUrl: "./rentabilidade.component.html",
 	styleUrl: "./rentabilidade.component.scss"
 })
 export class RentabilidadeComponent implements OnChanges {
 
 	@Input()
-	monthlyDataFiltered!: DataFull[];
+	loading: boolean = false;
 
 	@Input()
-	dailyDataProfitabilityFiltered!: DataProfitability[];
+	aggregatedProfitabilityByDate: AggregatedProfitabilityByDate[] = [];
+
+	@Input()
+	aggregatedDataByDate: AggregatedDataByDate[] = [];
 
 	@Input()
 	aggregatorOptionsSelected: DataAggregator | undefined;
+
+	dateFormat: string = "dd/MM/yyyy";
 
 	chartType: ChartType | undefined;
 	chartData: ChartData | undefined;
@@ -37,18 +45,32 @@ export class RentabilidadeComponent implements OnChanges {
 	chartHeight: string = "100%";
 
 	constructor(
-		private currencyPipe: CurrencyPipe,
 		private percentPipe: PercentPipe
 	) { }
 
-	ngOnChanges() {
-		if (this.monthlyDataFiltered && this.dailyDataProfitabilityFiltered && this.aggregatorOptionsSelected) {
-			this.buildViewRentabilidade(this.monthlyDataFiltered, this.dailyDataProfitabilityFiltered);
+	ngOnChanges(changes: SimpleChanges): void {
+
+		if (changes["aggregatorOptionsSelected"]) {
+
+			switch (this.aggregatorOptionsSelected) {
+				case "Ano":
+					this.dateFormat = "yyyy";
+					break;
+				case "Mês":
+					this.dateFormat = "MM/yyyy";
+					break;
+				case "Dia":
+					this.dateFormat = "dd/MM/yyyy";;
+					break;
+			}
+		}
+
+		if (changes["aggregatedProfitabilityByDate"] || changes["aggregatedDataByDate"]) {
+			this.buildChart();
 		}
 	}
 
-	buildViewRentabilidade(monthlyDataFiltered: DataFull[], dailyDataProfitabilityFiltered: DataProfitability[]) {
-
+	buildChart() {
 
 		this.chartType = undefined;
 		this.chartData = undefined;
@@ -63,71 +85,70 @@ export class RentabilidadeComponent implements OnChanges {
 			}
 
 			this.chartType = "bar";
-			this.chartHeight = 75 + (20 * monthlyDataFiltered.length * 5) + "px";
+			this.chartHeight = 75 + (20 * this.aggregatedDataByDate.length * 5) + "px";
 
 			this.chartData = {
-				labels: monthlyDataFiltered
-					.map(element => element.referenceDate)
-					.map(element => format(element, this.aggregatorOptionsSelected == "Ano" ? "yyyy" : "MMM/yyyy", { locale: ptBR })),
-				datasets: ["profitabilityCarteira", "profitabilityCdi", "profitabilityIbov", "profitabilityInflacao", "profitabilityPoupanca"].map(serie => {
+				labels: this.aggregatedDataByDate.map(element => format(element.referenceDate, this.dateFormat, { locale: ptBR })),
+				datasets: (["profitabilityCarteira", "profitabilityCdi", "profitabilityIbov", "profitabilityInflacao", "profitabilityPoupanca"] as
+					(keyof Pick<AggregatedDataByDate, "profitabilityCarteira" | "profitabilityCdi" | "profitabilityIbov" | "profitabilityInflacao" | "profitabilityPoupanca">)[]).map(serie => {
 
-					const result: ChartDataset = {
-						type: "bar",
-						label: "",
-						data: monthlyDataFiltered.map(element => element[serie as keyof DataFull]) as number[],
-						borderWidth: 2,
-						borderColor: "",
-						backgroundColor: "",
-						// hidden: ["profitabilityCdi", "profitabilityIbov", "profitabilityInflacao", "profitabilityPoupanca"].includes(serie),
-						datalabels: {
-							align: "start",
-							font: {
-								family: "Montserrat",
-								weight: 700,
-								size: 10
+						const result: ChartDataset = {
+							type: "bar",
+							label: "",
+							data: this.aggregatedDataByDate.map(element => element[serie]),
+							borderWidth: 2,
+							borderColor: "",
+							backgroundColor: "",
+							// hidden: ["profitabilityCdi", "profitabilityIbov", "profitabilityInflacao", "profitabilityPoupanca"].includes(serie),
+							datalabels: {
+								align: "start",
+								font: {
+									family: "Montserrat",
+									weight: 700,
+									size: 10
+								}
 							}
+						};
+
+						switch (serie) {
+							case "profitabilityCarteira":
+								result.label = "Carteira";
+								result.borderColor = "#26A69A";
+								result.backgroundColor = "#26A69A";
+								result.datalabels!.align = "end";
+								break;
+
+							case "profitabilityCdi":
+								result.label = "CDI";
+								result.borderColor = "#29B6F6";
+								result.backgroundColor = "#29B6F6";
+								result.datalabels!.align = "end";
+								break;
+
+							case "profitabilityIbov":
+								result.label = "IBOV";
+								result.borderColor = "#FFA726";
+								result.backgroundColor = "#FFA726";
+								result.datalabels!.align = "end";
+								break;
+
+							case "profitabilityInflacao":
+								result.label = "IPCA";
+								result.borderColor = "#e67c73";
+								result.backgroundColor = "#e67c73";
+								result.datalabels!.align = "end";
+								break;
+
+							case "profitabilityPoupanca":
+								result.label = "Poupança";
+								result.borderColor = "#FFEE58";
+								result.backgroundColor = "#FFEE58";
+								result.datalabels!.align = "end";
+								break;
 						}
-					};
 
-					switch (serie) {
-						case "profitabilityCarteira":
-							result.label = "Carteira";
-							result.borderColor = "#26A69A";
-							result.backgroundColor = "#26A69A";
-							result.datalabels!.align = "end";
-							break;
-
-						case "profitabilityCdi":
-							result.label = "CDI";
-							result.borderColor = "#29B6F6";
-							result.backgroundColor = "#29B6F6";
-							result.datalabels!.align = "end";
-							break;
-
-						case "profitabilityIbov":
-							result.label = "IBOV";
-							result.borderColor = "#FFA726";
-							result.backgroundColor = "#FFA726";
-							result.datalabels!.align = "end";
-							break;
-
-						case "profitabilityInflacao":
-							result.label = "IPCA";
-							result.borderColor = "#e67c73";
-							result.backgroundColor = "#e67c73";
-							result.datalabels!.align = "end";
-							break;
-
-						case "profitabilityPoupanca":
-							result.label = "Poupança";
-							result.borderColor = "#FFEE58";
-							result.backgroundColor = "#FFEE58";
-							result.datalabels!.align = "end";
-							break;
-					}
-
-					return result;
-				})
+						return result;
+					})
 			};
 
 			this.chartOptions = {
@@ -171,7 +192,7 @@ export class RentabilidadeComponent implements OnChanges {
 							}
 
 							const visibleItens = ci.legend!.legendItems!.map(item => (item.hidden ? 0 : 1) as number).reduce((acc, value) => acc + value, 0);
-							const chartHeight = 75 + (20 * monthlyDataFiltered.length * visibleItens);
+							const chartHeight = 75 + (20 * this.aggregatedDataByDate.length * visibleItens);
 							(ci.canvas.parentNode as HTMLElement)!.style.height = chartHeight + "px";
 						}
 					},
@@ -205,12 +226,12 @@ export class RentabilidadeComponent implements OnChanges {
 			this.chartHeight = window.innerWidth < window.innerHeight ? "50%" : "100%";
 
 			this.chartData = {
-				labels: dailyDataProfitabilityFiltered.map(element => element.referenceDate),
-				datasets: ["carteira", "cdi", "ibov", "inflacao", "poupanca"].map(serie => {
+				labels: this.aggregatedProfitabilityByDate.map(element => element.referenceDate),
+				datasets: (["carteira", "cdi", "ibov", "inflacao", "poupanca"] as (keyof Pick<AggregatedProfitabilityByDate, "carteira" | "cdi" | "ibov" | "inflacao" | "poupanca">)[]).map(serie => {
 
 					const result = {
 						label: "",
-						data: dailyDataProfitabilityFiltered.map(element => element[serie as keyof DataProfitability]) as number[],
+						data: this.aggregatedProfitabilityByDate.map(element => element[serie]),
 						fill: false,
 						tension: 0,
 						borderWidth: 2,

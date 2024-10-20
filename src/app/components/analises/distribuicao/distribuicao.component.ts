@@ -1,9 +1,9 @@
 import { CommonModule, CurrencyPipe, PercentPipe } from "@angular/common";
-import { Component, Input, OnChanges } from "@angular/core";
+import { Component, Input, OnChanges, SimpleChanges } from "@angular/core";
 import { ChartData, ChartOptions, ChartType, Plugin } from "chart.js";
 import ChartDataLabels from "chartjs-plugin-datalabels";
 import { ChartModule } from "primeng/chart";
-import { DataConsolidateAsset } from "../../../models/data-consolidate-asset";
+import { AggregatedDataByLabel } from "../../../models/aggregated-data-by-label";
 
 @Component({
 	selector: "app-distribuicao",
@@ -12,13 +12,20 @@ import { DataConsolidateAsset } from "../../../models/data-consolidate-asset";
 		CommonModule,
 		ChartModule
 	],
+	providers: [
+		CurrencyPipe,
+		PercentPipe
+	],
 	templateUrl: "./distribuicao.component.html",
 	styleUrl: "./distribuicao.component.scss"
 })
 export class DistribuicaoComponent implements OnChanges {
 
 	@Input()
-	consolidateAssetsFiltered!: Partial<DataConsolidateAsset>[];
+	loading: boolean = false;
+
+	@Input()
+	aggregatedDataByLabel: AggregatedDataByLabel[] = [];
 
 	chartType: ChartType | undefined;
 	chartData: ChartData | undefined;
@@ -31,14 +38,13 @@ export class DistribuicaoComponent implements OnChanges {
 		private percentPipe: PercentPipe
 	) { }
 
-	ngOnChanges() {
-		if (this.consolidateAssetsFiltered) {
-			this.buildViewDistribuicao(this.consolidateAssetsFiltered);
+	ngOnChanges(changes: SimpleChanges): void {
+		if (changes["aggregatedDataByLabel"]) {
+			this.buildChart();
 		}
 	}
 
-	buildViewDistribuicao(consolidateAssetsFiltered: Partial<DataConsolidateAsset>[]) {
-
+	buildChart() {
 
 		this.chartType = undefined;
 		this.chartData = undefined;
@@ -49,18 +55,33 @@ export class DistribuicaoComponent implements OnChanges {
 		this.chartType = "doughnut";
 		this.chartHeight = window.innerWidth > window.innerHeight ? (window.innerHeight > 450 ? "450px" : "100%") : "50%";
 
+		this.chartPlugins.push({
+			id: "legendMargin",
+			beforeInit: function (chart) {
+				if (chart.legend) {
+					const fitValue = chart.legend.fit;
+					chart.legend.fit = function fit() {
+						fitValue.bind(chart.legend)();
+						return (this.height += 20);
+					};
+				}
+			}
+		});
 
 		if (!this.chartPlugins.includes(ChartDataLabels)) {
 			this.chartPlugins.push(ChartDataLabels);
 		}
 
+		if (this.aggregatedDataByLabel.length === 0) {
+			return;
+		}
+
 		this.chartData = {
-			labels: consolidateAssetsFiltered
-				.map(element => element.strategyOfDiversificationDescription || element.productTypeName || element.financialInstitutionName),
+			labels: this.aggregatedDataByLabel.map(element => element.referenceLabel),
 			datasets: [{
 				type: "doughnut",
 				label: "Saldo",
-				data: consolidateAssetsFiltered.map(element => element.equity) as number[],
+				data: this.aggregatedDataByLabel.map(element => element.finalEquity),
 				backgroundColor: [
 					"#29B6F6",
 					"#e67c73",
@@ -78,7 +99,7 @@ export class DistribuicaoComponent implements OnChanges {
 				borderWidth: 1,
 				hoverOffset: 4,
 				datalabels: {
-					// align: "start",
+					align: "end",
 					font: {
 						family: "Montserrat",
 						weight: 700,
@@ -100,6 +121,9 @@ export class DistribuicaoComponent implements OnChanges {
 			// aspectRatio: 2.0,
 			maintainAspectRatio: false,
 			aspectRatio: 1,
+			layout: {
+				padding: 20
+			},
 			plugins: {
 				tooltip: {
 					mode: "index",
@@ -118,7 +142,7 @@ export class DistribuicaoComponent implements OnChanges {
 					position: "top"
 				},
 				datalabels: {
-					// anchor: "end",
+					anchor: "end",
 					display: true,
 					formatter: (value, context) => {
 						const total = (context.dataset.data as number[]).reduce((acc: number, value: number) => acc + value, 0);

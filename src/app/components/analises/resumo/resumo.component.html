@@ -1,7 +1,7 @@
-<div class="border rounded data-panel mb-4">
+<div class="border data-panel rounded mb-4">
 	<p-table
 		#dt
-		[value]="tableData"
+		[value]="aggregatedDataByDate"
 		[scrollable]="true"
 		scrollHeight="flex"
 		[tableStyle]="{ 'min-width': '50rem' }"
@@ -22,8 +22,8 @@
 						styleClass="p-button-sm "
 						icon="pi pi-external-link"
 						label="Exportar"
-						(onClick)="downloadTableCSV()"
-						[disabled]="portfolioDataLoading || dataFullLoading"
+						(onClick)="downloadCSV()"
+						[disabled]="loading"
 					/>
 				</th>
 				<th colspan="9">Saldos</th>
@@ -124,7 +124,7 @@
 					pFrozenColumn
 					class="text-center font-semibold"
 				>
-					{{ row.referenceDate | date : (aggregatorOptionsSelected == "Ano" ? "yyyy" : "MM/yyyy") }}
+					{{ row.referenceDate | date : dateFormat }}
 				</td>
 				<td class="text-right">
 					{{ row.valueApplied | currency : "BRL" }}
@@ -205,7 +205,7 @@
 		</ng-template>
 
 		<ng-template pTemplate="footer">
-			<ng-template [ngIf]="portfolioDataLoading || dataFullLoading">
+			<ng-template [ngIf]="loading">
 				<tr *ngFor="let i of [].constructor(20); index as x">
 					<td pFrozenColumn>
 						<p-skeleton />
@@ -224,69 +224,69 @@
 					Totais
 				</td>
 				<td class="text-right">
-					{{ tableDataTotalsRow.valueApplied | currency : "BRL" }}
+					{{ aggregatedDataByDateTotals.valueApplied | currency : "BRL" }}
 				</td>
 				<td class="text-right">
-					{{ tableDataTotalsRow.initialEquity | currency : "BRL" }}
+					{{ aggregatedDataByDateTotals.initialEquity | currency : "BRL" }}
 				</td>
 				<td class="text-right">
-					{{ tableDataTotalsRow.applications | currency : "BRL" }}
+					{{ aggregatedDataByDateTotals.applications | currency : "BRL" }}
 				</td>
 				<td class="text-right">
-					{{ tableDataTotalsRow.redemptions | currency : "BRL" }}
+					{{ aggregatedDataByDateTotals.redemptions | currency : "BRL" }}
 				</td>
 				<td class="text-right">
-					{{ tableDataTotalsRow.movementations | currency : "BRL" }}
+					{{ aggregatedDataByDateTotals.movementations | currency : "BRL" }}
 				</td>
 				<td class="text-right">
-					{{ tableDataTotalsRow.returns | currency : "BRL" }}
+					{{ aggregatedDataByDateTotals.returns | currency : "BRL" }}
 				</td>
 				<td class="text-right">
-					{{ tableDataTotalsRow.proceeds | currency : "BRL" }}
+					{{ aggregatedDataByDateTotals.proceeds | currency : "BRL" }}
 				</td>
 				<td class="text-right">
-					{{ tableDataTotalsRow.capitalGain | currency : "BRL" }}
+					{{ aggregatedDataByDateTotals.capitalGain | currency : "BRL" }}
 				</td>
 				<td class="text-right">
-					{{ tableDataTotalsRow.finalEquity | currency : "BRL" }}
+					{{ aggregatedDataByDateTotals.finalEquity | currency : "BRL" }}
 				</td>
 				<td class="text-right">
-					{{ tableDataTotalsRow.incomeTax | currency : "BRL" }}
+					{{ aggregatedDataByDateTotals.incomeTax | currency : "BRL" }}
 				</td>
 				<td class="text-right">
-					{{ tableDataTotalsRow.iof | currency : "BRL" }}
+					{{ aggregatedDataByDateTotals.iof | currency : "BRL" }}
 				</td>
 				<td class="text-right">
-					{{ tableDataTotalsRow.cost | currency : "BRL" }}
+					{{ aggregatedDataByDateTotals.cost | currency : "BRL" }}
 				</td>
 				<td class="text-right">
-					{{ tableDataTotalsRow.charges | currency : "BRL" }}
+					{{ aggregatedDataByDateTotals.charges | currency : "BRL" }}
 				</td>
 				<td class="text-right">
-					{{ tableDataTotalsRow.profitabilityCarteira | percent : "1.2-2" }}
+					{{ aggregatedDataByDateTotals.profitabilityCarteira | percent : "1.2-2" }}
 				</td>
 				<td class="text-right">
 					<div class="flex justify-between">
-						<span>{{ tableDataTotalsRow.profitabilityCdi | percent : "1.2-2" }}</span>
-						<span> ({{ (tableDataTotalsRow.profitabilityCarteiraPercentCdi | percent : "1.2-2") || "N/A" }}) </span>
+						<span>{{ aggregatedDataByDateTotals.profitabilityCdi | percent : "1.2-2" }}</span>
+						<span> ({{ (aggregatedDataByDateTotals.profitabilityCarteiraPercentCdi | percent : "1.2-2") || "N/A" }}) </span>
 					</div>
 				</td>
 				<td class="text-right">
 					<div class="flex justify-between">
-						<span>{{ tableDataTotalsRow.profitabilityIbov | percent : "1.2-2" }}</span>
-						<span> ({{ (tableDataTotalsRow.profitabilityCarteiraPercentIbov | percent : "1.2-2") || "N/A" }}) </span>
+						<span>{{ aggregatedDataByDateTotals.profitabilityIbov | percent : "1.2-2" }}</span>
+						<span> ({{ (aggregatedDataByDateTotals.profitabilityCarteiraPercentIbov | percent : "1.2-2") || "N/A" }}) </span>
 					</div>
 				</td>
 				<td class="text-right">
 					<div class="flex justify-between">
-						<span>{{ tableDataTotalsRow.profitabilityInflacao | percent : "1.2-2" }}</span>
-						<span> ({{ (tableDataTotalsRow.profitabilityCarteiraPercentInflacao | percent : "1.2-2") || "N/A" }}) </span>
+						<span>{{ aggregatedDataByDateTotals.profitabilityInflacao | percent : "1.2-2" }}</span>
+						<span> ({{ (aggregatedDataByDateTotals.profitabilityCarteiraPercentInflacao | percent : "1.2-2") || "N/A" }}) </span>
 					</div>
 				</td>
 				<td class="text-right">
 					<div class="flex justify-between">
-						<span>{{ tableDataTotalsRow.profitabilityPoupanca | percent : "1.2-2" }}</span>
-						<span> ({{ (tableDataTotalsRow.profitabilityCarteiraPercentPoupanca | percent : "1.2-2") || "N/A" }}) </span>
+						<span>{{ aggregatedDataByDateTotals.profitabilityPoupanca | percent : "1.2-2" }}</span>
+						<span> ({{ (aggregatedDataByDateTotals.profitabilityCarteiraPercentPoupanca | percent : "1.2-2") || "N/A" }}) </span>
 					</div>
 				</td>
 			</tr>

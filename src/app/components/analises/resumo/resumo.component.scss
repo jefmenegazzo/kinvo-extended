@@ -1,0 +1,25 @@
+th,
+td {
+	white-space: nowrap;
+	border-width: 0.25px;
+	border-style: solid;
+	border-color: #e5e7eb;
+}
+
+:host ::ng-deep {
+	.p-datatable table {
+		border-collapse: separate;
+	}
+}
+
+.data-panel {
+	height: calc(100vh - 136px);
+	max-height: calc(100vh - 136px);
+}
+
+@media screen and (max-width: 768px) {
+	.data-panel {
+		height: calc(100vh - 130px);
+		max-height: calc(100vh - 130px);
+	}
+}

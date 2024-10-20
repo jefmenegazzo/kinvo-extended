@@ -44,11 +44,11 @@ export class KinvoServiceApi {
 
 	public login(user?: string, password?: string, remember?: boolean) {
 
-		if(!user) {
+		if (!user) {
 			user = this.cacheService.get(KINVO_KEYS.USER);
 		}
 
-		if(!password) {
+		if (!password) {
 			password = this.cacheService.get(KINVO_KEYS.PASSWORD);
 		}
 
@@ -95,196 +95,192 @@ export class KinvoServiceApi {
 			);
 	}
 
-	public consolidatePortfolio(id: number) {
+	public consolidatePortfolio(id: number, ignoreCache: boolean = true) {
 
-		const key = `consolidatePortfolio-${id}`;
+		const key = `KinvoServiceApi.consolidatePortfolio-${id}`;
 
 		const jsonData = {
 			portfolioId: id,
 			ignoreCache: true
 		};
 
-		return this.http.post<KinvoApiResponse<KinvoConsolidation>>
-			(`${this.urlBase}portfolio-command/consolidate`, jsonData)
-			.pipe(
-				retry(3),
-				tap(response => this.cacheResponse(key, response))
-			);
+		return this.cacheService.has(key) && ignoreCache === false
+			? this.cacheService.getObservable<KinvoApiResponse<KinvoConsolidation>>(key)
+			: this.http.post<KinvoApiResponse<KinvoConsolidation>>
+				(`${this.urlBase}portfolio-command/consolidate`, jsonData)
+				.pipe(
+					retry(3),
+					tap(response => this.cacheResponse(key, response))
+				);
 	}
 
-	public isPortfolioConsolidationInProgress(id: number) {
-		return this.http.get<KinvoApiResponse<KinvoConsolidationInProgress>>
-			(`${this.urlBase}portfolio-command/portfolioConsolidator/IsPortfolioConsolidationInProgress/${id}`);
+	public isPortfolioConsolidationInProgress(id: number, ignoreCache: boolean = true) {
+
+		const key = `KinvoServiceApi.isPortfolioConsolidationInProgress-${id}`;
+
+		return this.cacheService.has(key) && ignoreCache === false
+			? this.cacheService.getObservable<KinvoApiResponse<KinvoConsolidationInProgress>>(key)
+			: this.http.get<KinvoApiResponse<KinvoConsolidationInProgress>>
+				(`${this.urlBase}portfolio-command/portfolioConsolidator/IsPortfolioConsolidationInProgress/${id}`)
+				.pipe(
+					retry(3),
+					tap(response => this.cacheResponse(key, response))
+				);
 	}
 
-	public consolidateFundsByPortfolio(id: number) {
+	public consolidateFundsByPortfolio(id: number, ignoreCache: boolean = true) {
 
-		return this.http.post<KinvoApiResponse<KinvoConsolidation>>
-			(`${this.urlBase}portfolio/assetClassFundConsolidator/consolidate/${id}`, {})
-			.pipe(
-				retry(3)
-			);
+		const key = `KinvoServiceApi.consolidateFundsByPortfolio-${id}`;
+
+		return this.cacheService.has(key) && ignoreCache === false
+			? this.cacheService.getObservable<KinvoApiResponse<KinvoConsolidation>>(key)
+			: this.http.post<KinvoApiResponse<KinvoConsolidation>>
+				(`${this.urlBase}portfolio/assetClassFundConsolidator/consolidate/${id}`, {})
+				.pipe(
+					retry(3),
+					tap(response => this.cacheResponse(key, response))
+				);
 	}
 
 	public getPortfolios() {
 
-		const key = "getPortfolios";
+		const key = `KinvoServiceApi.getPortfolios`;
 
-		if (this.cacheService.get(key)) {
-			return this.cacheService.getObservable<KinvoApiResponse<KinvoPortfolio[]>>(key);
-		}
-
-		return this.http.get<KinvoApiResponse<KinvoPortfolio[]>>
-			(`${this.urlBase}portfolio-command/portfolio/getPortfolios`)
-			.pipe(
-				retry(3),
-				tap(response => this.cacheResponse(key, response))
-			);
+		return this.cacheService.has(key)
+			? this.cacheService.getObservable<KinvoApiResponse<KinvoPortfolio[]>>(key)
+			: this.http.get<KinvoApiResponse<KinvoPortfolio[]>>
+				(`${this.urlBase}portfolio-command/portfolio/getPortfolios`)
+				.pipe(
+					retry(3),
+					tap(response => this.cacheResponse(key, response))
+				);
 	}
 
 	public getFinancialInstitutions() {
 
-		const key = "getFinancialInstitutions";
+		const key = `KinvoServiceApi.getFinancialInstitutions`;
 
-		if (this.cacheService.get(key)) {
-			return this.cacheService.getObservable<KinvoApiResponse<KinvoFinancialInstitution[]>>(key);
-		}
-
-		return this.http.get<KinvoApiResponse<KinvoFinancialInstitution[]>>
-			(`${this.urlBase}portfolio-command/FinancialInstitution/GetAll/`)
-			.pipe(
-				retry(3),
-				tap(response => this.cacheResponse(key, response))
-			);
+		return this.cacheService.has(key)
+			? this.cacheService.getObservable<KinvoApiResponse<KinvoFinancialInstitution[]>>(key)
+			: this.http.get<KinvoApiResponse<KinvoFinancialInstitution[]>>
+				(`${this.urlBase}portfolio-command/FinancialInstitution/GetAll/`)
+				.pipe(
+					retry(3),
+					tap(response => this.cacheResponse(key, response))
+				);
 	}
 
 	public getPeriodicPortfolioProfitability(id: number, period: number = 1) {
 
-		const key = `getPeriodicPortfolioProfitability-${id}-${period}`;
+		const key = `KinvoServiceApi.getPeriodicPortfolioProfitability-${id}-${period}`;
 
-		if (this.cacheService.get(key)) {
-			return this.cacheService.getObservable<KinvoApiResponse<KinvoPortfolioProfitability>>(key);
-		}
-
-		return this.http.get<KinvoApiResponse<KinvoPortfolioProfitability>>
-			(`${this.urlBase}portfolio-query/PortfolioAnalysis/GetPeriodicPortfolioProfitability/${id}/${period}`)
-			.pipe(
-				retry(3),
-				tap(response => this.cacheResponse(key, response))
-			);
+		return this.cacheService.has(key)
+			? this.cacheService.getObservable<KinvoApiResponse<KinvoPortfolioProfitability>>(key)
+			: this.http.get<KinvoApiResponse<KinvoPortfolioProfitability>>
+				(`${this.urlBase}portfolio-query/PortfolioAnalysis/GetPeriodicPortfolioProfitability/${id}/${period}`)
+				.pipe(
+					retry(3),
+					tap(response => this.cacheResponse(key, response))
+				);
 	}
 
 	public getCapitalGainByPortfolio(id: number) {
 
-		const key = `getCapitalGainByPortfolio-${id}`;
+		const key = `KinvoServiceApi.getCapitalGainByPortfolio-${id}`;
 
-		if (this.cacheService.get(key)) {
-			return this.cacheService.getObservable<KinvoApiResponse<KinvoCapitalGain>>(key);
-		}
-
-		return this.http.get<KinvoApiResponse<KinvoCapitalGain>>
-			(`${this.urlBase}capital-gain/by-portfolio/${id}`)
-			.pipe(
-				retry(3),
-				tap(response => this.cacheResponse(key, response))
-			);
+		return this.cacheService.has(key)
+			? this.cacheService.getObservable<KinvoApiResponse<KinvoCapitalGain>>(key)
+			: this.http.get<KinvoApiResponse<KinvoCapitalGain>>
+				(`${this.urlBase}capital-gain/by-portfolio/${id}`)
+				.pipe(
+					retry(3),
+					tap(response => this.cacheResponse(key, response))
+				);
 	}
 
 	public getPortfolioGoalStatusByPortfolio(id: number) {
 
-		const key = `getPortfolioGoalStatusByPortfolio-${id}`;
+		const key = `KinvoServiceApi.getPortfolioGoalStatusByPortfolio-${id}`;
 
-		if (this.cacheService.get(key)) {
-			return this.cacheService.getObservable<KinvoApiResponse<KinvoPortfolioGoalStatus>>(key);
-		}
-
-		return this.http.get<KinvoApiResponse<KinvoPortfolioGoalStatus>>
-			(`${this.urlBase}simpleEquityGoal/getPortfolioGoalStatus/${id}`)
-			.pipe(
-				retry(3),
-				tap(response => this.cacheResponse(key, response))
-			);
+		return this.cacheService.has(key)
+			? this.cacheService.getObservable<KinvoApiResponse<KinvoPortfolioGoalStatus>>(key)
+			: this.http.get<KinvoApiResponse<KinvoPortfolioGoalStatus>>
+				(`${this.urlBase}simpleEquityGoal/getPortfolioGoalStatus/${id}`)
+				.pipe(
+					retry(3),
+					tap(response => this.cacheResponse(key, response))
+				);
 	}
 
 	public getPortfolioProductByPortfolio(id: number) {
 
-		const key = `getPortfolioProductByPortfolio-${id}`;
-
-		if (this.cacheService.get(key)) {
-			return this.cacheService.getObservable<KinvoApiResponse<KinvoPortfolioProduct[]>>(key);
-		}
+		const key = `KinvoServiceApi.getPortfolioProductByPortfolio-${id}`;
 
 		// Similar ao https://k2c-api.kinvo.com.br/v2/consolidation/portfolios/1240278/assets mas este não traz equity e mais
-		return this.http.get<KinvoApiResponse<KinvoPortfolioProduct[]>>
-			(`${this.urlBase}portfolio-command/portfolioProduct/GetByPortfolio/${id}`)
-			.pipe(
-				retry(3),
-				tap(response => this.cacheResponse(key, response))
-			);
+		return this.cacheService.has(key)
+			? this.cacheService.getObservable<KinvoApiResponse<KinvoPortfolioProduct[]>>(key)
+			: this.http.get<KinvoApiResponse<KinvoPortfolioProduct[]>>
+				(`${this.urlBase}portfolio-command/portfolioProduct/GetByPortfolio/${id}`)
+				.pipe(
+					retry(3),
+					tap(response => this.cacheResponse(key, response))
+				);
 	}
 
 	public getProductStatementByProduct(id: number) {
 
-		const key = `getProductStatementByProduct-${id}`;
-
-		if (this.cacheService.get(key)) {
-			return this.cacheService.getObservable<KinvoApiResponse<KinvoPortfolioProductStatement[]>>(key);
-		}
+		const key = `KinvoServiceApi.getProductStatementByProduct-${id}`;
 
 		// Similar ao https://k2c-api.kinvo.com.br/V2/consolidation/assets/44755657/statement mas este outro não traz iof e ir
-		return this.http.get<KinvoApiResponse<KinvoPortfolioProductStatement[]>>
-			(`${this.urlBase}portfolio-query/Statement/getProductStatement/${id}`)
-			.pipe(
-				retry(3),
-				tap(response => this.cacheResponse(key, response))
-			);
+		return this.cacheService.has(key)
+			? this.cacheService.getObservable<KinvoApiResponse<KinvoPortfolioProductStatement[]>>(key)
+			: this.http.get<KinvoApiResponse<KinvoPortfolioProductStatement[]>>
+				(`${this.urlBase}portfolio-query/Statement/getProductStatement/${id}`)
+				.pipe(
+					retry(3),
+					tap(response => this.cacheResponse(key, response))
+				);
 	}
 
 	public getConsolidatedPortfolioAssets(id: number) {
 
-		const key = `getConsolidationPortfolioAssets-${id}`;
+		const key = `KinvoServiceApi.getConsolidationPortfolioAssets-${id}`;
 
-		if (this.cacheService.get(key)) {
-			return this.cacheService.getObservable<KinvoApiResponse<KinvoConsolidationPortfolioAsset[]>>(key);
-		}
-
-		return this.http.get<KinvoApiResponse<KinvoConsolidationPortfolioAsset[]>>
-			(`${this.urlBase}v2/consolidation/portfolios/${id}/assets`)
-			.pipe(
-				retry(3),
-				tap(response => this.cacheResponse(key, response))
-			);
+		return this.cacheService.has(key)
+			? this.cacheService.getObservable<KinvoApiResponse<KinvoConsolidationPortfolioAsset[]>>(key)
+			: this.http.get<KinvoApiResponse<KinvoConsolidationPortfolioAsset[]>>
+				(`${this.urlBase}v2/consolidation/portfolios/${id}/assets`)
+				.pipe(
+					retry(3),
+					tap(response => this.cacheResponse(key, response))
+				);
 	}
 
 	public getFundsDailyEquityByPortfolio(id: number) {
 
-		const key = `getAssetClassFundDailyEquityByPortfolio-${id}`;
+		const key = `KinvoServiceApi.getAssetClassFundDailyEquityByPortfolio-${id}`;
 
-		if (this.cacheService.get(key)) {
-			return this.cacheService.getObservable<KinvoApiResponse<KinvoFundDailyEquity[]>>(key);
-		}
-
-		return this.http.get<KinvoApiResponse<KinvoFundDailyEquity[]>>
-			(`${this.urlBase}portfolio-query/AssetClassFundConsolidation/GetDailyEquityByPortfolio/${id}`)
-			.pipe(
-				retry(3),
-				tap(response => this.cacheResponse(key, response))
-			);
+		return this.cacheService.has(key)
+			? this.cacheService.getObservable<KinvoApiResponse<KinvoFundDailyEquity[]>>(key)
+			: this.http.get<KinvoApiResponse<KinvoFundDailyEquity[]>>
+				(`${this.urlBase}portfolio-query/AssetClassFundConsolidation/GetDailyEquityByPortfolio/${id}`)
+				.pipe(
+					retry(3),
+					tap(response => this.cacheResponse(key, response))
+				);
 	}
 
 	public getFundsSnapshotByPortfolio(id: number) {
 
-		const key = `getFundsSnapshotByPortfolio-${id}`;
+		const key = `KinvoServiceApi.getFundsSnapshotByPortfolio-${id}`;
 
-		if (this.cacheService.get(key)) {
-			return this.cacheService.getObservable<KinvoApiResponse<KinvoFundSnapshot[]>>(key);
-		}
-
-		return this.http.get<KinvoApiResponse<KinvoFundSnapshot[]>>
-			(`${this.urlBase}portfolio-query/AssetClassFundConsolidation/GetSnapshotByProduct/${id}`)
-			.pipe(
-				retry(3),
-				tap(response => this.cacheResponse(key, response))
-			);
+		return this.cacheService.has(key)
+			? this.cacheService.getObservable<KinvoApiResponse<KinvoFundSnapshot[]>>(key)
+			: this.http.get<KinvoApiResponse<KinvoFundSnapshot[]>>
+				(`${this.urlBase}portfolio-query/AssetClassFundConsolidation/GetSnapshotByProduct/${id}`)
+				.pipe(
+					retry(3),
+					tap(response => this.cacheResponse(key, response))
+				);
 	}
 }

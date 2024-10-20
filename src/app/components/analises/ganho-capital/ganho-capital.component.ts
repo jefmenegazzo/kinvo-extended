@@ -1,12 +1,12 @@
-import { CommonModule, CurrencyPipe, PercentPipe } from "@angular/common";
-import { Component, Input, OnChanges } from "@angular/core";
+import { CommonModule, CurrencyPipe } from "@angular/common";
+import { Component, Input, OnChanges, SimpleChanges } from "@angular/core";
 import { ChartData, ChartDataset, ChartOptions, ChartType, Plugin } from "chart.js";
 import ChartDataLabels from "chartjs-plugin-datalabels";
 import { format } from "date-fns/format";
 import { ptBR } from "date-fns/locale/pt-BR";
 import { ChartModule } from "primeng/chart";
-import { DataFull } from "../../../models/data-full";
-import { DataAggregator } from "../analises.constants";
+import { AggregatedDataByDate } from "../../../models/aggregated-data-by-date";
+import { DataAggregator } from "../analises.component";
 
 @Component({
 	selector: "app-ganho-capital",
@@ -15,16 +15,24 @@ import { DataAggregator } from "../analises.constants";
 		CommonModule,
 		ChartModule
 	],
+	providers: [
+		CurrencyPipe
+	],
 	templateUrl: "./ganho-capital.component.html",
 	styleUrl: "./ganho-capital.component.scss"
 })
 export class GanhoCapitalComponent implements OnChanges {
 
 	@Input()
-	monthlyDataFiltered!: DataFull[];
+	loading: boolean = false;
+
+	@Input()
+	aggregatedDataByDate: AggregatedDataByDate[] = [];
 
 	@Input()
 	aggregatorOptionsSelected: DataAggregator | undefined;
+
+	dateFormat: string = "dd/MM/yyyy";
 
 	chartType: ChartType | undefined;
 	chartData: ChartData | undefined;
@@ -33,18 +41,32 @@ export class GanhoCapitalComponent implements OnChanges {
 	chartHeight: string = "100%";
 
 	constructor(
-		private currencyPipe: CurrencyPipe,
-		private percentPipe: PercentPipe
+		private currencyPipe: CurrencyPipe
 	) { }
 
-	ngOnChanges() {
-		if (this.monthlyDataFiltered) {
-			this.buildViewGanhoCapital(this.monthlyDataFiltered);
+	ngOnChanges(changes: SimpleChanges): void {
+
+		if (changes["aggregatorOptionsSelected"]) {
+
+			switch (this.aggregatorOptionsSelected) {
+				case "Ano":
+					this.dateFormat = "yyyy";
+					break;
+				case "Mês":
+					this.dateFormat = "MM/yyyy";
+					break;
+				case "Dia":
+					this.dateFormat = "dd/MM/yyyy";;
+					break;
+			}
+		}
+
+		if (changes["aggregatedDataByDate"]) {
+			this.buildChart();
 		}
 	}
 
-	buildViewGanhoCapital(monthlyDataFiltered: DataFull[]) {
-
+	buildChart() {
 
 		this.chartType = undefined;
 		this.chartData = undefined;
@@ -53,22 +75,24 @@ export class GanhoCapitalComponent implements OnChanges {
 		this.chartHeight = "100%";
 
 		this.chartType = "bar";
-		this.chartHeight = 75 + (20 * monthlyDataFiltered.length) + "px";
+		this.chartHeight = 75 + (20 * this.aggregatedDataByDate.length) + "px";
 
 		if (!this.chartPlugins.includes(ChartDataLabels)) {
 			this.chartPlugins.push(ChartDataLabels);
 		}
 
+		if (this.aggregatedDataByDate.length === 0) {
+			return;
+		}
+
 		this.chartData = {
-			labels: monthlyDataFiltered
-				.map(element => element.referenceDate)
-				.map(element => format(element, this.aggregatorOptionsSelected == "Ano" ? "yyyy" : "MMM/yyyy", { locale: ptBR })),
-			datasets: ["capitalGain", "charges"].map(serie => {
+			labels: this.aggregatedDataByDate.map(element => format(element.referenceDate, this.dateFormat, { locale: ptBR })),
+			datasets: (["capitalGain", "charges"] as (keyof Pick<AggregatedDataByDate, "capitalGain" | "charges">)[]).map(serie => {
 
 				const result: ChartDataset = {
 					type: "bar",
 					label: "",
-					data: monthlyDataFiltered.map(element => element[serie as keyof DataFull]) as number[],
+					data: this.aggregatedDataByDate.map(element => element[serie]),
 					borderWidth: 1,
 					borderColor: "",
 					backgroundColor: "",

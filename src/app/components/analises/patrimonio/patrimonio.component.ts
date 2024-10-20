@@ -1,12 +1,12 @@
-import { CommonModule, CurrencyPipe, PercentPipe } from "@angular/common";
-import { Component, Input, OnChanges } from "@angular/core";
+import { CommonModule, CurrencyPipe } from "@angular/common";
+import { Component, Input, OnChanges, SimpleChanges } from "@angular/core";
 import { ChartData, ChartDataset, ChartOptions, ChartType, Plugin } from "chart.js";
 import ChartDataLabels from "chartjs-plugin-datalabels";
 import { format } from "date-fns/format";
 import { ptBR } from "date-fns/locale/pt-BR";
 import { ChartModule } from "primeng/chart";
-import { DataFull } from "../../../models/data-full";
-import { DataAggregator } from "../analises.constants";
+import { AggregatedDataByDate } from "../../../models/aggregated-data-by-date";
+import { DataAggregator } from "../analises.component";
 
 @Component({
 	selector: "app-patrimonio",
@@ -15,16 +15,24 @@ import { DataAggregator } from "../analises.constants";
 		CommonModule,
 		ChartModule
 	],
+	providers: [
+		CurrencyPipe
+	],
 	templateUrl: "./patrimonio.component.html",
 	styleUrl: "./patrimonio.component.scss"
 })
 export class PatrimonioComponent implements OnChanges {
 
 	@Input()
-	monthlyDataFiltered!: DataFull[];
+	loading: boolean = false;
+
+	@Input()
+	aggregatedDataByDate: AggregatedDataByDate[] = [];
 
 	@Input()
 	aggregatorOptionsSelected: DataAggregator | undefined;
+
+	dateFormat: string = "dd/MM/yyyy";
 
 	chartType: ChartType | undefined;
 	chartData: ChartData | undefined;
@@ -33,24 +41,42 @@ export class PatrimonioComponent implements OnChanges {
 	chartHeight: string = "100%";
 
 	constructor(
-		private currencyPipe: CurrencyPipe,
-		private percentPipe: PercentPipe
+		private currencyPipe: CurrencyPipe
 	) { }
 
-	ngOnChanges() {
-		if (this.monthlyDataFiltered) {
-			this.buildViewPatrimonio(this.monthlyDataFiltered);
+	ngOnChanges(changes: SimpleChanges): void {
+
+		if (changes["aggregatorOptionsSelected"]) {
+
+			switch (this.aggregatorOptionsSelected) {
+				case "Ano":
+					this.dateFormat = "yyyy";
+					break;
+				case "Mês":
+					this.dateFormat = "MM/yyyy";
+					break;
+				case "Dia":
+					this.dateFormat = "dd/MM/yyyy";;
+					break;
+			}
+		}
+
+		if (changes["aggregatedDataByDate"]) {
+			this.buildChart();
 		}
 	}
 
-	buildViewPatrimonio(monthlyDataFiltered: DataFull[]) {
-
+	buildChart() {
 
 		this.chartType = undefined;
 		this.chartData = undefined;
 		this.chartOptions = undefined;
 		this.chartPlugins.splice(0, this.chartPlugins.length);
 		this.chartHeight = "100%";
+
+		if (this.aggregatedDataByDate.length === 0) {
+			return;
+		}
 
 		if (this.aggregatorOptionsSelected == "Ano") {
 
@@ -59,18 +85,18 @@ export class PatrimonioComponent implements OnChanges {
 			}
 
 			this.chartType = "bar";
-			this.chartHeight = 75 + (20 * monthlyDataFiltered.length) + "px";
+			this.chartHeight = 75 + (20 * this.aggregatedDataByDate.length) + "px";
+
+			this.aggregatedDataByDate = [...this.aggregatedDataByDate].sort((a, b) => b.referenceDate.getTime() - a.referenceDate.getTime());
 
 			this.chartData = {
-				labels: monthlyDataFiltered
-					.map(element => element.referenceDate)
-					.map(element => format(element, this.aggregatorOptionsSelected == "Ano" ? "yyyy" : "MMM/yyyy", { locale: ptBR })),
-				datasets: ["valueApplied", "finalEquity"].map(serie => {
+				labels: this.aggregatedDataByDate.map(element => format(element.referenceDate, this.dateFormat, { locale: ptBR })),
+				datasets: (["valueApplied", "finalEquity"] as (keyof Pick<AggregatedDataByDate, "valueApplied" | "finalEquity">)[]).map(serie => {
 
 					const result: ChartDataset = {
 						type: "bar",
 						label: "",
-						data: monthlyDataFiltered.map(element => element[serie as keyof DataFull]) as number[],
+						data: this.aggregatedDataByDate.map(element => element[serie]),
 						borderWidth: 1,
 						borderColor: "",
 						backgroundColor: "",
@@ -160,17 +186,16 @@ export class PatrimonioComponent implements OnChanges {
 			this.chartType = "line";
 			this.chartHeight = window.innerWidth < window.innerHeight ? "50%" : "100%";
 
+			this.aggregatedDataByDate = [...this.aggregatedDataByDate].sort((a, b) => a.referenceDate.getTime() - b.referenceDate.getTime());
+
 			this.chartData = {
-				labels: monthlyDataFiltered
-					.map(element => element.referenceDate)
-					.map(element => format(element, this.aggregatorOptionsSelected == "Ano" ? "yyyy" : "MMM/yyyy", { locale: ptBR }))
-					.reverse(),
-				datasets: ["valueApplied", "finalEquity"].map(serie => {
+				labels: this.aggregatedDataByDate.map(element => format(element.referenceDate, this.dateFormat, { locale: ptBR })),
+				datasets: (["valueApplied", "finalEquity"] as (keyof Pick<AggregatedDataByDate, "valueApplied" | "finalEquity">)[]).map(serie => {
 
 					const result: ChartDataset = {
 						type: "line",
 						label: "",
-						data: monthlyDataFiltered.map(element => element[serie as keyof DataFull]).reverse() as number[],
+						data: this.aggregatedDataByDate.map(element => element[serie]),
 						borderWidth: 1,
 						borderColor: "",
 						backgroundColor: "",

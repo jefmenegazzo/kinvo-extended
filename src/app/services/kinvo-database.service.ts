@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { Injectable } from "@angular/core";
-import { fromUnixTime, parseISO } from "date-fns";
+import { fromUnixTime, min, parse, parseISO } from "date-fns";
+import { ptBR } from "date-fns/locale/pt-BR";
+import { SelectItem } from "primeng/api";
 import { forkJoin } from "rxjs/internal/observable/forkJoin";
 import { of } from "rxjs/internal/observable/of";
 import { catchError } from "rxjs/internal/operators/catchError";
@@ -17,7 +19,9 @@ import { KinvoFundDailyEquity } from "../dtos/kinvo-fund-daily-equity";
 import { KinvoFundSnapshot } from "../dtos/kinvo-fund-snapshot";
 import { KinvoPortfolioProduct } from "../dtos/kinvo-portfolio-product";
 import { KinvoPortfolioProfitability } from "../dtos/kinvo-portfolio-profitability";
+import { ProfitabilityData } from "../models/aggregated-profitability-by-date";
 import { AssetData } from "../models/asset-data";
+import { GeneralFilterData } from "../models/general-filter-data";
 import { PortfolioData } from "../models/portfolio-data";
 import { CacheService } from "./cache.service";
 import { KinvoServiceApi } from "./kinvo.service.api";
@@ -64,9 +68,19 @@ export class KinvoDatabaseService {
 		private readonly cacheService: CacheService
 	) { }
 
+	private toTitleCase(str: string) {
+		return str.toLowerCase().split(" ").map((word: string) => {
+			return (word.charAt(0).toUpperCase() + word.slice(1));
+		}).join(" ");
+	}
+
+	private sortByLabel(a: SelectItem | GeneralFilterData, b: SelectItem | GeneralFilterData) {
+		return (a?.label || "") > (b?.label || "") ? 1 : -1;
+	}
+
 	loadPortfolios() {
 		const key = "KinvoDatabaseService.loadPortfolios";
-		return this.cacheService.get(key)
+		return this.cacheService.has(key)
 			? this.cacheService.getObservable<PortfolioData[]>(key)
 			: this.kinvoServiceApi.login()
 				.pipe(
@@ -80,6 +94,63 @@ export class KinvoDatabaseService {
 								} as PortfolioData)))
 							)
 					),
+					tap(result => this.cacheService.set(key, result))
+				);
+	}
+
+	loadGeneralFilterOptions(id: number) {
+		const key = "KinvoDatabaseService.loadGeneralFilterOptions";
+		return this.cacheService.get(key)
+			? this.cacheService.getObservable<(Date | GeneralFilterData[])[]>(key)
+			: this.kinvoServiceApi.getConsolidatedPortfolioAssets(id)
+				.pipe(
+					map(response => {
+
+						let firstApplication: Date | undefined = undefined;
+						let financialInstitutions: GeneralFilterData[] = [];
+						let strategies: GeneralFilterData[] = [];
+						let classes: GeneralFilterData[] = [];
+						let assets: GeneralFilterData[] = [];
+
+						if (response.success) {
+
+							firstApplication = min(response.data.map(asset => parse(asset.firstApplicationDate, "dd/MM/yyyy", new Date(), { locale: ptBR })));
+
+							classes = Object.entries(this.mapProductTypeIdToName)
+								.map(([key, value]) => ({ label: value, id: Number(key), field: "productTypeId" as keyof AssetData }))
+								.sort(this.sortByLabel);
+
+							strategies = Object.entries(this.mapStrategyOfDiversificationIdToDescription)
+								.map(([key, value]) => ({ label: value, id: Number(key), field: "strategyOfDiversificationId" as keyof AssetData }))
+								.sort(this.sortByLabel);
+
+							financialInstitutions = Object.entries(
+								response.data.reduce((acc, asset) => {
+									acc[asset.financialInstitutionId] = this.toTitleCase(asset.financialInstitutionName);
+									return acc;
+								}, {} as Record<number, string>)
+							)
+								.map(([key, value]) => ({ label: value, id: Number(key), field: "financialInstitutionId" as keyof AssetData }))
+								.sort(this.sortByLabel);;
+
+							assets = Object.entries(
+								response.data.reduce((acc, asset) => {
+									acc[asset.productId] = this.toTitleCase(asset.productName);
+									return acc;
+								}, {} as Record<number, string>)
+							)
+								.map(([key, value]) => ({ label: value, id: Number(key), field: "productId" as keyof AssetData }))
+								.sort(this.sortByLabel);;
+						}
+
+						return [
+							firstApplication,
+							financialInstitutions,
+							strategies,
+							classes,
+							assets
+						];
+					}),
 					tap(result => this.cacheService.set(key, result))
 				);
 	}
@@ -160,7 +231,7 @@ export class KinvoDatabaseService {
 		fundsSnapshot: KinvoApiResponse<KinvoFundSnapshot[]>,
 		fundsDailyEquity: KinvoApiResponse<KinvoFundDailyEquity[]>,
 		capitalGain: KinvoApiResponse<KinvoCapitalGain>,
-		profitability: KinvoApiResponse<KinvoPortfolioProfitability>
+		periodicProfitability: KinvoApiResponse<KinvoPortfolioProfitability>
 	) {
 		const assets: AssetData[] = [];
 
@@ -228,7 +299,46 @@ export class KinvoDatabaseService {
 			assets.push(asset);
 		}
 
-		console.log([products, consolidatedAssets, fundsDailyEquity, capitalGain, profitability]);
-		return [assets];
+		type Categories = keyof Pick<KinvoPortfolioProfitability, "dailyProfitabilityToChart" | "monthlyProfitabilityToChart" | "annualProfitabilityToChart">;
+		type Dates = keyof Pick<ProfitabilityData, "daily" | "monthly" | "yearly">;
+
+		const profitability = {
+			daily: [],
+			monthly: [],
+			yearly: [],
+		} as ProfitabilityData;
+
+		const profitabilityFieldMap: Record<Categories, Dates> = {
+			"dailyProfitabilityToChart": "daily",
+			"monthlyProfitabilityToChart": "monthly",
+			"annualProfitabilityToChart": "yearly"
+		};
+
+		Object.entries(profitabilityFieldMap).forEach(([key, value]) => {
+
+			const categories = periodicProfitability.data[key as Categories].categories.map(category => category.toString());
+			const series = periodicProfitability.data[key as Categories].series;
+
+			const carteira = series.find(serie => serie.name === "Carteira")!.data;
+			const cdi = series.find(serie => serie.name === "CDI")!.data;
+			const ibov = series.find(serie => serie.name === "IBOV")!.data;
+			const inflacao = series.find(serie => serie.name === "Inflação (IPCA)")!.data;
+			const poupanca = series.find(serie => serie.name === "Poupança")!.data;
+
+			for (let i = 0; i < categories.length; i++) {
+				profitability[value].push({
+					referenceDate: value == "daily"
+						? parseISO(categories[i])
+						: parse(categories[i], value == "monthly" ? "MMM. yy" : "yyyy", new Date(), { locale: ptBR }),
+					carteira: carteira[i],
+					cdi: cdi[i],
+					ibov: ibov[i],
+					inflacao: inflacao[i],
+					poupanca: poupanca[i]
+				});
+			}
+		});
+
+		return [assets, profitability];
 	}
 }
