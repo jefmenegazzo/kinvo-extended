@@ -1,7 +1,7 @@
 import { CommonModule } from "@angular/common";
 import { Component, OnInit } from "@angular/core";
 import { FormsModule } from "@angular/forms";
-import { format, lastDayOfMonth, parse, parseISO } from "date-fns";
+import { addDays, format, lastDayOfMonth, parse, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale/pt-BR";
 import cloneDeep from "lodash/cloneDeep";
 import { MenuItem, SelectItem, SelectItemGroup } from "primeng/api";
@@ -501,6 +501,18 @@ export class AnalisesComponent implements OnInit {
 				break;
 		}
 
+		let iniDate = new Date(this.dateRange![0]);
+		const endDate = new Date(this.dateRange![1]);
+		iniDate.setHours(0, 0, 0, 0);
+		endDate.setHours(0, 0, 0, 0);
+
+		// Cria todas as datas entre ini e end
+		while (iniDate.getTime() <= endDate.getTime()) {
+			const key = dateFormat ? format(iniDate, dateFormat, { locale: ptBR }) : "";
+			dataAggregated[key] = [];
+			iniDate = addDays(iniDate, 1);
+		}
+
 		for (const element of data) {
 
 			const date = element.referenceDate;
@@ -521,8 +533,8 @@ export class AnalisesComponent implements OnInit {
 			}
 
 			const row = this.createAggregatedDataByDate(key, dateFormat);
-			aggregationKeysFirst.forEach(key => row[key] = elements![0][key]);
-			aggregationKeysLast.forEach(key => row[key] = elements![elements!.length - 1][key]);
+			aggregationKeysFirst.forEach(key => row[key] = elements.length > 0 ? elements![0][key] : 0);
+			aggregationKeysLast.forEach(key => row[key] = elements.length > 0 ? elements![elements!.length - 1][key] : 0);
 			aggregationKeysSum.forEach(key => row[key] = elements!.reduce((acc, element) => acc + element[key]!, 0));
 			aggregationKeysJurosCompostos.forEach(key => row[key] = this.calcularJurosCompostos(elements.map(element => element[key]!)));
 			aggregationKeysPercentRelative.forEach((key, index) => row[key] = this.calcPercentOrNA(row.profitabilityCarteira, row[aggregationKeysJurosCompostos[index]]!));

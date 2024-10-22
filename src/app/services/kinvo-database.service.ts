@@ -159,7 +159,7 @@ export class KinvoDatabaseService {
 		return this.kinvoServiceApi.login()
 			.pipe(
 				switchMap(() =>
-					this.kinvoServiceApi.consolidatePortfolio(id)
+					this.kinvoServiceApi.consolidatePortfolio(id, false)
 						.pipe(
 							switchMap(response =>
 								response.data.consolidationRoute !== "QUEUED"
