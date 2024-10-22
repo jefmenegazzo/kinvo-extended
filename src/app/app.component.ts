@@ -4,7 +4,7 @@ import { Router, RouterModule, RouterOutlet } from "@angular/router";
 import { MenuItem } from "primeng/api";
 import { MenubarModule } from "primeng/menubar";
 import { ToastModule } from "primeng/toast";
-import { delay } from "rxjs/internal/operators/delay";
+// import { delay } from "rxjs/internal/operators/delay";
 import { Subscription } from "rxjs/internal/Subscription";
 import { CacheService, KINVO_KEYS } from "./services/cache.service";
 import { SessionService } from "./services/session.service";

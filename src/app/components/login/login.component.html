@@ -65,14 +65,14 @@
 					icon="pi pi-user"
 					class="w-full"
 					type="submit"
-					[loading]="loading"
-					[disabled]="loading"
+					[loading]="!!loading"
+					[disabled]="!!loading"
 				></button>
 			</form>
 		</div>
 	</div>
 </div>
 
-<div class="fixed bottom-3 right-3">
+<div class="fixed bottom-8 right-8">
 	<span>Versão: {{ version }}</span>
 </div>

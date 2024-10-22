@@ -34,7 +34,7 @@ import { SessionService } from "../../services/session.service";
 export class LoginComponent implements OnInit {
 
 	loginForm!: FormGroup;
-	loading = false;
+	loading = 0;
 	version = packageJson.version;
 
 	constructor(
@@ -45,7 +45,7 @@ export class LoginComponent implements OnInit {
 		private firebaseService: FirebaseService,
 	) { }
 
-	ngOnInit(): void {
+	async ngOnInit() {
 
 		this.loginForm = this.fb.group({
 			user: ["", Validators.required], // , Validators.email
@@ -53,14 +53,12 @@ export class LoginComponent implements OnInit {
 			remember: [true]
 		});
 
-		// eslint-disable-next-line @typescript-eslint/no-unused-vars
-		this.loadStorage().then(() => { }).catch((error) => { });
+		await this.loadStorage();
 	}
 
 	async loadStorage() {
 
-		this.loading = true;
-
+		this.loading++;
 		const exists = await this.sessionService.isEncryptedDataInStorage();
 
 		if (exists) {
@@ -70,7 +68,7 @@ export class LoginComponent implements OnInit {
 			this.onSubmit();
 		}
 
-		this.loading = false;
+		this.loading--;
 	}
 
 	onSubmit() {
@@ -85,7 +83,7 @@ export class LoginComponent implements OnInit {
 		if (this.loginForm.valid) {
 
 			this.loginForm.disable();
-			this.loading = true;
+			this.loading++;
 
 			this.kinvoServiceApi.login(
 				this.loginForm.value.user,
@@ -94,16 +92,20 @@ export class LoginComponent implements OnInit {
 			).pipe(
 				finalize(() => {
 					this.loginForm.enable();
-					this.loading = false;
+					this.loading--;
 				})
 			).subscribe({
 				next: async (result: KinvoApiResponse<KinvoLogin>) => {
+
+					this.loading++;
 
 					if (result && result.success) {
 						this.loginForm.disable();
 						await this.router.navigate(["analises"]);
 						await this.firebaseService.incrementUserAccessCount(this.loginForm.value.user);
 					}
+
+					this.loading--;
 				}
 			});
 		}
