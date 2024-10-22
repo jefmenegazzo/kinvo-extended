@@ -1,8 +1,8 @@
 <p-toast></p-toast>
 
-<div class="flex flex-col md:flex-row h-full w-full">
+<div class="flex flex-col landscape:flex-row h-full w-full">
 	<div
-		class="hidden md:flex flex-col flex-none w-[100px] items-center shadow-md py-4 bg-white border-solid border-0 border-r-2 border-gray-100"
+		class="hidden landscape:flex flex-col flex-none w-[75px] lg:w-[100px] items-center shadow-md py-4 bg-white border-solid border-0 border-r-2 border-gray-100"
 		*ngIf="hasLogin"
 	>
 		<div class="flex-none mt-6 mb-16 px-3.5 hidden lg:flex">
@@ -19,7 +19,7 @@
 
 		<div class="flex flex-grow flex-col w-full overflow-auto">
 			<a
-				class="flex flex-col items-center justify-center w-full min-h-[75px] h-[75px] no-underline hover:bg-gray-100"
+				class="flex flex-col items-center justify-center w-full min-h-[60px] lg:min-h-[75px] h-[60px] lg:h-[75px] no-underline hover:bg-gray-100"
 				*ngFor="let item of items"
 				[routerLink]="item.routerLink"
 				routerLinkActive="bg-gray-100"
@@ -27,19 +27,19 @@
 				<span class="material-symbols-outlined text-gray-500">
 					{{ item.icon }}
 				</span>
-				<span class="mt-2 text-gray-500 text-sm">{{ item.label }}</span>
+				<span class="mt-2 text-gray-500 text-xs lg:text-sm">{{ item.label }}</span>
 			</a>
 		</div>
 
 		<div class="flex flex-col w-full">
 			<a
 				tabindex="-1"
-				class="flex flex-col items-center justify-center w-full h-[75px] no-underline hover:bg-gray-100 cursor-pointer"
+				class="flex flex-col items-center justify-center w-full h-[60px] lg:h-[75px] no-underline hover:bg-gray-100 cursor-pointer"
 				(click)="logout($event)"
 				(keypress)="logout($event)"
 			>
 				<span class="material-symbols-outlined text-gray-500">logout</span>
-				<span class="mt-2 text-gray-500 text-sm">Sair</span>
+				<span class="mt-2 text-gray-500 text-xs lg:text-sm">Sair</span>
 			</a>
 		</div>
 	</div>
@@ -47,7 +47,7 @@
 		<router-outlet></router-outlet>
 	</div>
 	<div
-		class="flex md:hidden flex-row flex-none h-[60px] items-stretch justify-stretch shadow-lg bg-white  border-solid border-0 border-t-2 border-gray-100"
+		class="flex landscape:hidden flex-row flex-none h-[60px] items-stretch justify-stretch shadow-lg bg-white border-solid border-0 border-t-2 border-gray-100"
 		*ngIf="hasLogin"
 	>
 		<a
@@ -59,7 +59,7 @@
 			<span class="material-symbols-outlined text-gray-500">
 				{{ item.icon }}
 			</span>
-			<span class="mt-2 text-gray-500 text-xs">{{ item.label }}</span>
+			<span class="mt-2 text-gray-500 text-xs lg:text-sm">{{ item.label }}</span>
 		</a>
 		<a
 			tabindex="-1"
@@ -68,7 +68,7 @@
 			(keypress)="logout($event)"
 		>
 			<span class="material-symbols-outlined text-gray-500">logout</span>
-			<span class="mt-2 text-gray-500 text-xs">Sair</span>
+			<span class="mt-2 text-gray-500 text-xs lg:text-sm">Sair</span>
 		</a>
 	</div>
 </div>
