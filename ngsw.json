@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1729614979256,
+  "timestamp": 1729629051977,
   "index": "./index.html",
   "assetGroups": [
     {
@@ -16,8 +16,8 @@
         "./chunk-CFXEO6UP.js",
         "./chunk-CRGCYFNL.js",
         "./chunk-FDHTTD3A.js",
+        "./chunk-H4AINUK4.js",
         "./chunk-LRUARRL3.js",
-        "./chunk-MA4AZFQW.js",
         "./chunk-NFJIWPWL.js",
         "./chunk-S5Q3J5MI.js",
         "./chunk-UPC3QP6T.js",
@@ -26,10 +26,10 @@
         "./chunk-ZEZAY3VG.js",
         "./favicon.ico",
         "./index.html",
-        "./main-VMWQUWJ3.js",
+        "./main-QSDKQQW3.js",
         "./manifest.webmanifest",
         "./polyfills-H2K4KJRD.js",
-        "./styles-46ME7L3N.css"
+        "./styles-UPTDIQ43.css"
       ],
       "patterns": []
     },
@@ -189,8 +189,8 @@
     "./chunk-CFXEO6UP.js": "04a5ab12f47d3601c8fdde9cc9ca5fcae46998fe",
     "./chunk-CRGCYFNL.js": "871093c97b9b10761a76e8951692b17610296ec3",
     "./chunk-FDHTTD3A.js": "a06b2643b725311b5c99453a82b736b4fbd19d66",
+    "./chunk-H4AINUK4.js": "943eb3836c971fb0683bed8597bd9cb40260649f",
     "./chunk-LRUARRL3.js": "ab1c203cfe3720c3fd8e248f1097a17cfabd2967",
-    "./chunk-MA4AZFQW.js": "e45947f5987447a69490284e57efaf0ba01deeb5",
     "./chunk-NFJIWPWL.js": "2df77a1bc86f89a32be4bd1f6e551f02bd87abe8",
     "./chunk-S5Q3J5MI.js": "a4e4d3762f3d80eb897f866d765144865fd47bcd",
     "./chunk-UPC3QP6T.js": "995c88ed9fde0f164977dd5732039f3333a21faf",
@@ -312,10 +312,10 @@
     "./icons/windows11/Wide310x150Logo.scale-150.png": "6dd26bfd6ce177a62639ce1eea705cdda190bf12",
     "./icons/windows11/Wide310x150Logo.scale-200.png": "c3517e23582bd0be667031b25c0e1be284b73809",
     "./icons/windows11/Wide310x150Logo.scale-400.png": "00a824890b78eb7348ca557bcff2bd8ea2cfc74e",
-    "./index.html": "6139fbb4d47bde9fb49795099ac4fd8dbbd9ec18",
+    "./index.html": "83a1ba253aba122fc109aebdd9872c0626700f89",
     "./kinvo-icon-logo.svg": "f81163c7c09fb27e3c91e8ff5a82cc1cc0997b40",
     "./kinvo-text-logo.svg": "6c32abe9d19dda7e8e0409e06336a3f7baa33e75",
-    "./main-VMWQUWJ3.js": "7965f327987fce833a2f8a79ca5e1e629ea7365c",
+    "./main-QSDKQQW3.js": "c117dfd0034915a8ed1353414c5d75fb7d5741a9",
     "./manifest.webmanifest": "efb70a7a8d5bccb228d629e1e47a99cc6e65c6c3",
     "./media/Inter-italic.var-SWFAXF2C.woff2": "6f20a046917bf86d4b6cc29c4e2515bd64d2cb9b",
     "./media/Inter-roman.var-WIJJYAE4.woff2": "7a2602d2ebb08ce895e33addb6fe595f1029431e",
@@ -326,7 +326,7 @@
     "./media/primeicons-GEFHGEHP.ttf": "3b878ca7e88945a8ec25814810b95367d8977ae6",
     "./media/primeicons-P53SE5CV.woff": "361e3af71bb4e515feead2f787348a92a5527158",
     "./polyfills-H2K4KJRD.js": "1bfa1ba3c7d686159f6bca84c374434862b97814",
-    "./styles-46ME7L3N.css": "749d5dc7d710a3fa041a19a6476d31f1fcc52281"
+    "./styles-UPTDIQ43.css": "a3b6fe4e6ea7cca39c7cf212c8096a5c5abe8107"
   },
   "navigationUrls": [
     {
