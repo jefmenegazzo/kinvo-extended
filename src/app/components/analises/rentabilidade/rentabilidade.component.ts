@@ -78,6 +78,10 @@ export class RentabilidadeComponent implements OnChanges {
 		this.chartPlugins.splice(0, this.chartPlugins.length);
 		this.chartHeight = "100%";
 
+		if (this.aggregatedDataByDate.length === 0 || this.aggregatedProfitabilityByDate.length === 0) {
+			return;
+		}
+
 		if (this.aggregatorOptionsSelected == "Ano" || this.aggregatorOptionsSelected == "Mês") {
 
 			if (!this.chartPlugins.includes(ChartDataLabels)) {

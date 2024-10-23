@@ -126,3 +126,30 @@ body .p-component,
 	border-color: var(--surface-border);
 	color: var(--primary-color);
 }
+
+// --------------------------------------------------------------------------------
+// Data Panel
+// --------------------------------------------------------------------------------
+
+@media screen and (orientation: landscape) and (min-width: 1280px) {
+	.data-panel {
+		height: calc(100vh - 106px);
+        max-height: calc(100vh - 106px);
+	}
+}
+
+@media screen and (orientation: landscape) and (max-width: 1280px) {
+	.data-panel {
+		height: calc(100vh - 62px);
+        max-height: calc(100vh - 62px);
+		// height: calc(100vh - 146px);
+        // max-height: calc(100vh - 146px);
+	}
+}
+
+@media screen and (orientation: portrait) {
+	.data-panel {
+		height: calc(100vh - 124px);
+		max-height: calc(100vh - 124px);
+	}
+}

@@ -121,9 +121,6 @@ export class DistribuicaoComponent implements OnChanges {
 			// aspectRatio: 2.0,
 			maintainAspectRatio: false,
 			aspectRatio: 1,
-			layout: {
-				padding: 20
-			},
 			plugins: {
 				tooltip: {
 					mode: "index",

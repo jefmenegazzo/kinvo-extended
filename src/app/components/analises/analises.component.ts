@@ -87,7 +87,7 @@ export class AnalisesComponent implements OnInit {
 		return this.portfolioDataLoading || this.generalFilterOptionsLoading || this.dataFullLoading;
 	}
 
-	firstApplication: Date | undefined;
+	firstApplicationDate: Date | undefined;
 	financialInstitutionsData: GeneralFilterData[] = [];
 	strategiesData: GeneralFilterData[] = [];
 	classesData: GeneralFilterData[] = [];
@@ -98,6 +98,8 @@ export class AnalisesComponent implements OnInit {
 	aggregatedDataByDate: AggregatedDataByDate[] = [];
 	aggregatedDataByDateTotals: AggregatedDataByDate = {} as AggregatedDataByDate;
 	aggregatedProfitabilityByDate: AggregatedProfitabilityByDate[] = [];
+
+	readonly lastDayOfMonthDate = lastDayOfMonth(new Date());
 
 	constructor(
 		private kinvoDatabaseService: KinvoDatabaseService,
@@ -151,9 +153,9 @@ export class AnalisesComponent implements OnInit {
 					this.generalFilterOptionsLoading = false;
 				})
 			)
-			.subscribe(([firstApplication, financialInstitutions, strategies, classes, assets]) => {
+			.subscribe(([firstApplicationDate, financialInstitutions, strategies, classes, assets]) => {
 
-				this.firstApplication = firstApplication as Date;
+				this.firstApplicationDate = firstApplicationDate as Date;
 				this.financialInstitutionsData = financialInstitutions as GeneralFilterData[];
 				this.strategiesData = strategies as GeneralFilterData[];
 				this.classesData = classes as GeneralFilterData[];
@@ -209,7 +211,7 @@ export class AnalisesComponent implements OnInit {
 
 	onDataIntervalChange(event?: Date[]) {
 
-		let [minMonth, maxMonth]: [Date | undefined, Date | undefined] = [this.firstApplication || new Date(), new Date()];
+		let [minMonth, maxMonth]: [Date | undefined, Date | undefined] = [this.firstApplicationDate || new Date(), new Date()];
 
 		switch (this.dataIntervalOptionsSelected) {
 			case this.dataIntervalOptions[0]: // "Do Início":

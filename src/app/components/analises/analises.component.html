@@ -23,7 +23,7 @@
 	</div>
 
 	<div class="flex flex-col flex-grow overflow-auto w-full h-full gap-4 p-4">
-		<div class="flex flex-col flex-none gap-4 md:flex-row">
+		<div class="flex flex-col flex-none flex-wrap gap-4 md:flex-row">
 			<div class="flex flex-row">
 				<p-button
 					type="button"
@@ -34,7 +34,8 @@
 				/>
 
 				<p-dropdown
-					class="w-full min-w-[150px]"
+					class="w-full"
+					placeholder="Carteira"
 					styleClass="p-dropdown-sm rounded-none rounded-r-lg w-full"
 					panelStyleClass="max-w-[350px]"
 					[options]="portfolioData"
@@ -57,7 +58,7 @@
 				/>
 
 				<p-dropdown
-					class="w-full min-w-[150px]"
+					class="w-full"
 					styleClass="p-dropdown-sm rounded-none w-full"
 					[(ngModel)]="dataIntervalOptionsSelected"
 					[options]="dataIntervalOptions"
@@ -67,7 +68,7 @@
 				/>
 
 				<p-calendar
-					class="w-full min-w-[150px]"
+					class="w-full"
 					styleClass="w-full"
 					inputStyleClass="rounded-none rounded-r-lg w-full"
 					selectionMode="range"
@@ -77,6 +78,10 @@
 					dateFormat="mm/yy"
 					[disabled]="loading || dataIntervalOptionsSelected !== dataIntervalOptions[8]"
 					(ngModelChange)="onDataIntervalChange($event)"
+					[iconDisplay]="'input'"
+					[showIcon]="true"
+					[minDate]="firstApplicationDate"
+					[maxDate]="lastDayOfMonthDate"
 				/>
 			</div>
 
@@ -90,7 +95,8 @@
 				/>
 
 				<p-dropdown
-					class="w-full min-w-[150px]"
+					class="w-full"
+					placeholder="Agregador"
 					styleClass="p-dropdown-sm rounded-none rounded-r-lg w-full"
 					[options]="aggregatorOptions"
 					[(ngModel)]="aggregatorOptionsSelected"
@@ -109,10 +115,10 @@
 				/>
 
 				<p-dropdown
-					class="w-full min-w-[150px]"
+					class="w-full"
+					placeholder="Tudo"
 					styleClass="p-dropdown-sm rounded-none rounded-r-lg w-full"
 					panelStyleClass="max-w-[250px] md:max-w-[350px]"
-					placeholder="Tudo"
 					[loading]="generalFilterOptionsLoading"
 					[disabled]="loading"
 					[options]="generalFilterOptions"

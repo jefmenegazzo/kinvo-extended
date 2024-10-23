@@ -106,7 +106,7 @@ export class KinvoDatabaseService {
 				.pipe(
 					map(response => {
 
-						let firstApplication: Date | undefined = undefined;
+						let firstApplicationDate: Date | undefined = undefined;
 						let financialInstitutions: GeneralFilterData[] = [];
 						let strategies: GeneralFilterData[] = [];
 						let classes: GeneralFilterData[] = [];
@@ -114,7 +114,7 @@ export class KinvoDatabaseService {
 
 						if (response.success) {
 
-							firstApplication = min(response.data.map(asset => parse(asset.firstApplicationDate, "dd/MM/yyyy", new Date(), { locale: ptBR })));
+							firstApplicationDate = min(response.data.map(asset => parse(asset.firstApplicationDate, "dd/MM/yyyy", new Date(), { locale: ptBR })));
 
 							classes = Object.entries(this.mapProductTypeIdToName)
 								.map(([key, value]) => ({ label: value, id: Number(key), field: "productTypeId" as keyof AssetData }))
@@ -144,7 +144,7 @@ export class KinvoDatabaseService {
 						}
 
 						return [
-							firstApplication,
+							firstApplicationDate,
 							financialInstitutions,
 							strategies,
 							classes,
