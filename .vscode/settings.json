@@ -108,6 +108,9 @@
 		"angular-*": {
 			"style": "scss",
 			"externalTemplate": true
+		},
+		"angular-component": {
+			"skipDisplayBlock": true
 		}
 	},
 	"files.associations": {

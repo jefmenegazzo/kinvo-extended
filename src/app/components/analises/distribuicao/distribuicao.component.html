@@ -1,4 +1,7 @@
 <div class="data-panel">
+	@if(loading) {
+	<app-chart-skeleton></app-chart-skeleton>
+	} @else {
 	<p-chart
 		[type]="chartType"
 		[data]="chartData"
@@ -6,4 +9,5 @@
 		[plugins]="chartPlugins"
 		[height]="chartHeight"
 	/>
+	}
 </div>

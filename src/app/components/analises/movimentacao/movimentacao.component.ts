@@ -7,13 +7,15 @@ import { ptBR } from "date-fns/locale/pt-BR";
 import { ChartModule } from "primeng/chart";
 import { AggregatedDataByDate } from "../../../models/aggregated-data-by-date";
 import { DataAggregator } from "../analises.component";
+import { ChartSkeletonComponent } from "../../chart-skeleton/chart-skeleton.component";
 
 @Component({
 	selector: "app-movimentacao",
 	standalone: true,
 	imports: [
 		CommonModule,
-		ChartModule
+		ChartModule,
+		ChartSkeletonComponent
 	],
 	providers: [
 		CurrencyPipe

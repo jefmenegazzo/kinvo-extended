@@ -8,13 +8,15 @@ import { ChartModule } from "primeng/chart";
 import { AggregatedDataByDate } from "../../../models/aggregated-data-by-date";
 import { AggregatedProfitabilityByDate } from "../../../models/aggregated-profitability-by-date";
 import { DataAggregator } from "../analises.component";
+import { ChartSkeletonComponent } from "../../chart-skeleton/chart-skeleton.component";
 
 @Component({
 	selector: "app-rentabilidade",
 	standalone: true,
 	imports: [
 		CommonModule,
-		ChartModule
+		ChartModule,
+		ChartSkeletonComponent
 	],
 	providers: [
 		PercentPipe
