@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1729646739755,
+  "timestamp": 1729731880208,
   "index": "./index.html",
   "assetGroups": [
     {
@@ -14,22 +14,22 @@
         "./chunk-3OWJDHR4.js",
         "./chunk-4YRY4IP2.js",
         "./chunk-CFXEO6UP.js",
+        "./chunk-CMANZWVC.js",
         "./chunk-FDHTTD3A.js",
         "./chunk-LRUARRL3.js",
-        "./chunk-LUPX2HNR.js",
         "./chunk-NFJIWPWL.js",
+        "./chunk-QXFZ5C2A.js",
         "./chunk-S5Q3J5MI.js",
-        "./chunk-SJH5U4EI.js",
         "./chunk-UPC3QP6T.js",
         "./chunk-XBSBXLEX.js",
         "./chunk-XTPO3OJA.js",
         "./chunk-ZEZAY3VG.js",
         "./favicon.ico",
         "./index.html",
-        "./main-SJRHW2YT.js",
+        "./main-ZX3OHPVM.js",
         "./manifest.webmanifest",
         "./polyfills-H2K4KJRD.js",
-        "./styles-CF364TLW.css"
+        "./styles-BZKLTFLG.css"
       ],
       "patterns": []
     },
@@ -187,12 +187,12 @@
     "./chunk-3OWJDHR4.js": "67da11e53d1d4b372798bb4c03188b61fe00ec69",
     "./chunk-4YRY4IP2.js": "0edff1528b9c9c28549f3f98eb43e7d5b3da3d92",
     "./chunk-CFXEO6UP.js": "04a5ab12f47d3601c8fdde9cc9ca5fcae46998fe",
+    "./chunk-CMANZWVC.js": "51b182762c3a93aad5a3d5ecf1a20417b266a3e1",
     "./chunk-FDHTTD3A.js": "a06b2643b725311b5c99453a82b736b4fbd19d66",
     "./chunk-LRUARRL3.js": "ab1c203cfe3720c3fd8e248f1097a17cfabd2967",
-    "./chunk-LUPX2HNR.js": "2b05e3d896d94f7e2ba7c34c489179996bbd4fae",
     "./chunk-NFJIWPWL.js": "2df77a1bc86f89a32be4bd1f6e551f02bd87abe8",
+    "./chunk-QXFZ5C2A.js": "9c299e3e23d967a788b5776495be15577179f30b",
     "./chunk-S5Q3J5MI.js": "a4e4d3762f3d80eb897f866d765144865fd47bcd",
-    "./chunk-SJH5U4EI.js": "12fb38e7c5a47e194403bd11eb7e46807a238518",
     "./chunk-UPC3QP6T.js": "995c88ed9fde0f164977dd5732039f3333a21faf",
     "./chunk-XBSBXLEX.js": "4cea468a3749d3485ffd93419713d4454c16b9b8",
     "./chunk-XTPO3OJA.js": "492de56a85109fe73bd109ae793fbe499b3bcb46",
@@ -312,10 +312,10 @@
     "./icons/windows11/Wide310x150Logo.scale-150.png": "6dd26bfd6ce177a62639ce1eea705cdda190bf12",
     "./icons/windows11/Wide310x150Logo.scale-200.png": "c3517e23582bd0be667031b25c0e1be284b73809",
     "./icons/windows11/Wide310x150Logo.scale-400.png": "00a824890b78eb7348ca557bcff2bd8ea2cfc74e",
-    "./index.html": "49b4663dc35d1950a6e356e7c722cd7bac67304b",
+    "./index.html": "c314fbede536908015c8649fe1171990eed4f7d7",
     "./kinvo-icon-logo.svg": "f81163c7c09fb27e3c91e8ff5a82cc1cc0997b40",
     "./kinvo-text-logo.svg": "6c32abe9d19dda7e8e0409e06336a3f7baa33e75",
-    "./main-SJRHW2YT.js": "54d7dfbae43bd3cd2f51da38dbd371d032b0d5cc",
+    "./main-ZX3OHPVM.js": "879062b51136e4cdaf50c071b36421714708d667",
     "./manifest.webmanifest": "efb70a7a8d5bccb228d629e1e47a99cc6e65c6c3",
     "./media/Inter-italic.var-SWFAXF2C.woff2": "6f20a046917bf86d4b6cc29c4e2515bd64d2cb9b",
     "./media/Inter-roman.var-WIJJYAE4.woff2": "7a2602d2ebb08ce895e33addb6fe595f1029431e",
@@ -326,7 +326,7 @@
     "./media/primeicons-GEFHGEHP.ttf": "3b878ca7e88945a8ec25814810b95367d8977ae6",
     "./media/primeicons-P53SE5CV.woff": "361e3af71bb4e515feead2f787348a92a5527158",
     "./polyfills-H2K4KJRD.js": "1bfa1ba3c7d686159f6bca84c374434862b97814",
-    "./styles-CF364TLW.css": "3284b3cb1ecec201ec693c481d92fec975bfda75"
+    "./styles-BZKLTFLG.css": "10e07916d2846106fed6d384b1b24dd941894657"
   },
   "navigationUrls": [
     {
