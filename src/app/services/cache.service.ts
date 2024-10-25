@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { Injectable } from "@angular/core";
+import { Injectable, isDevMode } from "@angular/core";
 import { BehaviorSubject, Observable, of } from "rxjs";
 
 export const KINVO_KEYS = {
@@ -26,6 +26,10 @@ export class CacheService {
 
 	public set<T = unknown>(key: string, data: T, override: boolean = true): void {
 
+		if (!this.isEnabled(key)) {
+			return;
+		}
+
 		if (this.cache.has(key) && !override) {
 			throw new Error(`Data already exists for key '${key}'. Use a different key, delete the existing one first or mark override to true.`);
 		}
@@ -35,6 +39,11 @@ export class CacheService {
 	}
 
 	public get<T = unknown>(key: string): T {
+
+		if (!this.isEnabled(key)) {
+			return null as T;
+		}
+
 		return this.cache.get(key) as T;
 	}
 
@@ -60,5 +69,9 @@ export class CacheService {
 
 	private notifyChange<T = unknown>(key: string, value: T): void {
 		this.cache$.next({ key: key, value: value });
+	}
+
+	private isEnabled(key: string) {
+		return true; // isDevMode() || Object.values(KINVO_KEYS).includes(key);
 	}
 }

@@ -4,6 +4,7 @@ import { ChartData, ChartOptions, ChartType, ChartTypeRegistry, Plugin, TooltipI
 import ChartDataLabels, { Context } from "chartjs-plugin-datalabels";
 import { ChartModule } from "primeng/chart";
 import { AggregatedDataByLabel } from "../../../models/aggregated-data-by-label";
+import { isLandScape, isMediumOrHigherScreen, isPortrait } from "../../../services/viewport.service";
 import { ChartSkeletonComponent } from "../../chart-skeleton/chart-skeleton.component";
 
 @Component({
@@ -43,7 +44,8 @@ export class DistribuicaoComponent implements OnChanges {
 					const fitValue = chart.legend.fit;
 					chart.legend.fit = function fit() {
 						fitValue.bind(chart.legend)();
-						return (this.height += 48);
+						this.height += isPortrait() ? 24 : 0;
+						this.width += isLandScape() ? 48 : 0;
 					};
 				}
 			}
@@ -51,7 +53,8 @@ export class DistribuicaoComponent implements OnChanges {
 		ChartDataLabels
 	];
 
-	chartHeight: string = "100%";
+	chartHeight?: string = undefined;
+	chartWidth?: string = undefined;
 
 	readonly colors = ["#29B6F6", "#E67C73", "#FFA726", "#FFEE58", "#26A69A"];
 
@@ -70,14 +73,6 @@ export class DistribuicaoComponent implements OnChanges {
 		if (changes["aggregatedDataByLabel"]) {
 			this.buildChart();
 		}
-	}
-
-	isPortrait(): boolean {
-		return window.innerWidth < window.innerHeight;
-	}
-
-	isLargeScreen(): boolean {
-		return window.innerWidth >= 1280;
 	}
 
 	transformCurrency(value: number): string {
@@ -104,7 +99,8 @@ export class DistribuicaoComponent implements OnChanges {
 			return;
 		}
 
-		this.chartHeight = this.isPortrait() ? "50%": "100%";
+		this.chartHeight = isLandScape() ? "100%": undefined;
+		this.chartWidth = isPortrait() ? "100%": undefined;
 
 		this.aggregatedDataByLabel = [...this.aggregatedDataByLabel].sort((a, b) => b.finalEquity - a.finalEquity);
 
@@ -137,10 +133,10 @@ export class DistribuicaoComponent implements OnChanges {
 			aspectRatio: 1,
 			layout: {
 				padding: {
-					left: this.isLargeScreen() ? 200 : (this.isPortrait() ? 100 : 0),
-					right: this.isLargeScreen() ? 200 : (this.isPortrait() ? 100 : 0),
-					top: this.isLargeScreen() ? 200 : (this.isPortrait() ? 0 : 100),
-					bottom: this.isLargeScreen() ? 200 : (this.isPortrait() ? 0 : 100)
+					left: isPortrait() ? 48 : (isMediumOrHigherScreen() ? (window.innerWidth * 15)/100 : 48),
+					right: isPortrait() ? 48 : (isMediumOrHigherScreen() ? (window.innerWidth * 15)/100 : 48),
+					top: isPortrait() ? 24 : (isMediumOrHigherScreen() ? (window.innerHeight * 15)/100 : 48),
+					bottom: isPortrait() ? 24 : (isMediumOrHigherScreen() ? (window.innerHeight * 15)/100 : 48)
 				}
 			},
 			plugins: {
@@ -152,7 +148,7 @@ export class DistribuicaoComponent implements OnChanges {
 					}
 				},
 				legend: {
-					position: this.isPortrait() ? "top" : "left",
+					position: isPortrait() ? "top" : "left",
 					labels: {
 						font: this.font,
 						usePointStyle: true

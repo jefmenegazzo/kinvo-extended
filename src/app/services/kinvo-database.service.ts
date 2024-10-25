@@ -114,7 +114,12 @@ export class KinvoDatabaseService {
 
 						if (response.success) {
 
-							firstApplicationDate = min(response.data.map(asset => parse(asset.firstApplicationDate, "dd/MM/yyyy", new Date(), { locale: ptBR })));
+							firstApplicationDate = min(
+								response.data
+									.filter(asset => asset.productHasPublishedPrice)
+									.map(asset => parse(asset.firstApplicationDate, "dd/MM/yyyy", new Date(), { locale: ptBR })
+									)
+							);
 
 							classes = Object.entries(this.mapProductTypeIdToName)
 								.map(([key, value]) => ({ label: value, id: Number(key), field: "productTypeId" as keyof AssetData }))
